@@ -2,7 +2,9 @@
 
 namespace Plinct\Tool;
 
-class Thumbnail 
+use function exif_read_data;
+
+class Thumbnail
 {
     const IMAGE_MAX_SIZE = 1080;
     
@@ -13,9 +15,7 @@ class Thumbnail
     protected $pathfile;
     
     protected $imageDirname;
-    
-    protected $imageBasename;
-    
+
     protected $imageFilename;
     
     protected $imageExtension;
@@ -23,14 +23,18 @@ class Thumbnail
     protected $originalWidth;
     
     protected $originalHeight;
+
+    protected $originalRatio;
     
     protected $imageType;
     
     protected $newWidth;
     
     protected $newHeight;
+
+    protected $newRatio;
     
-    protected $image_max_width;
+    protected static $image_max_width;
     
     protected $httpRoot;
     
@@ -49,10 +53,10 @@ class Thumbnail
         $pathInfo = pathinfo($this->pathfile);
         
         $this->imageDirname = $pathInfo['dirname'];
-        $this->imageBasename = $pathInfo['basename'];
         $this->imageFilename = $pathInfo['filename'];
-        $this->imageExtension = $pathInfo['extension'] ?? null;        
-        $this->image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
+        $this->imageExtension = $pathInfo['extension'] ?? null;
+
+        self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
     
     private function setPathfile(string $path) 
@@ -100,10 +104,14 @@ class Thumbnail
     {
         // original sizes
         list($this->originalWidth, $this->originalHeight, $this->imageType) = getimagesize($this->pathfile);
+
+        $this->originalRatio = round($this->originalHeight / $this->originalWidth, 2);
         
-        $this->newWidth = $width < 1 ? floor($this->image_max_width * $width) : ($width == 1 ? $this->originalWidth : $width);
+        $this->newWidth = $width < 1 ? floor(self::$image_max_width * $width) : ($width == 1 ? $this->originalWidth : $width);
         
         $this->newHeight = isset($height) && $height !== (float) 0 ? floor($this->newWidth * $height) : floor($this->newWidth*($this->originalHeight/$this->originalWidth));
+
+        $this->newRatio = round($this->newHeight / $this->newWidth, 2);
     }
 
 
@@ -118,7 +126,7 @@ class Thumbnail
         // srcset  
         $attributes = $this->sizesAndSrcset($attributes, $this->newWidth);
         
-        $measure23 = floor(2*($this->image_max_width/3));
+        $measure23 = floor(2*(self::$image_max_width/3));
         
         if ($this->newWidth > $measure23) {
             $attributes = $this->sizesAndSrcset($attributes, $measure23);
@@ -148,7 +156,7 @@ class Thumbnail
     }
     
     public function getThumbnail($newWidth, $newHeight = null)
-    {  
+    {
         if ($newWidth < 1 || $newHeight < 1) {
             $this->setNewMeasures($newWidth, $newHeight);
             
@@ -188,12 +196,10 @@ class Thumbnail
                 imagealphablending($newImage, false);
                 imagesavealpha($newImage, true);
                 break;
-            
-            default: $imageTemporary = imagecreatefromjpeg($this->pathfile); break;
         }   
         
         // ajusta orientação 
-        $orientation = @\exif_read_data($this->pathfile)['Orientation'] ?? 1;
+        $orientation = @exif_read_data($this->pathfile)['Orientation'] ?? 1;
         
         switch ($orientation) {
             case 8: 
@@ -207,27 +213,26 @@ class Thumbnail
             case 6: 
                 $imageTemporary = imagerotate($imageTemporary, -90, 0); 
                 break;
-        }  
-        
-        // COPIA A IMAGEM, SE NÃO HOUVER CORTES         
-        $originalRatio = round($this->originalHeight / $this->originalWidth, 4);      
-        $newRatio = round($newHeight / $newWidth, 4);   
-        
-        if ($newRatio == $originalRatio || round($newRatio*$originalRatio,4) == 1 ) {
+        }
+
+        // copia a imagem em novas dimensões
+        if ($this->newRatio == $this->originalRatio) {
             imagecopyresized($newImage, $imageTemporary, 0, 0, 0, 0, $newWidth, $newHeight, $this->originalWidth, $this->originalHeight);
             
-        } else {
+        }
+        // recorta a imagem
+        else {
             // PAISAGEM
-            if ($newRatio < 1) {  
-                $widthScale = $originalRatio >= $newRatio ? $newWidth : ceil($newHeight/$originalRatio);
+            if ($this->newRatio < 1) {
+                $widthScale = $this->originalRatio >= $this->newRatio ? $newWidth : ceil($newHeight / $this->originalRatio);
             }
             // RETRATO
-            elseif ($newRatio > 1) {                
-                $widthScale = $orientation == 1 ? ceil($newHeight/$originalRatio) : ceil($newHeight*$originalRatio);
+            elseif ($this->newRatio > 1) {
+                $widthScale = $orientation == 1 ? ceil($newHeight / $this->originalRatio) : ceil($newHeight * $this->originalRatio);
             }
             // QUADRADO
-            elseif ($newRatio == 1) {
-                $widthScale = $orientation == 1 ? ceil($newWidth/$originalRatio) : $newWidth;
+            elseif ($this->newRatio == 1) {
+                $widthScale = $orientation == 1 ? ceil($newWidth / $this->originalRatio) : $newWidth;
             }
             
             $imageTemporary = imagescale($imageTemporary, $widthScale);
@@ -250,16 +255,12 @@ class Thumbnail
                 imagegif($newImage, $thumbnailFile);
                 break;  
             
-            case '2': 
+            case '2':
                 imagejpeg($newImage, $thumbnailFile);
                 break; 
             
             case '3': 
                 imagepng($newImage, $thumbnailFile);
-                break; 
-            
-            default: 
-                imagejpeg($newImage, $thumbnailFile);
                 break;
         }  
         
@@ -276,9 +277,9 @@ class Thumbnail
      */
     public function uploadImage(string $filename) 
     {
-        $this->setNewMeasures($this->image_max_width);
+        $this->setNewMeasures(self::$image_max_width);
         
-        if ($this->originalWidth > $this->image_max_width) {
+        if ($this->originalWidth > self::$image_max_width) {
             $this->createThumbnail($this->newWidth, $this->newHeight, $_SERVER['DOCUMENT_ROOT'] . $filename);
             
         } else {
