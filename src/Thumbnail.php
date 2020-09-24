@@ -8,49 +8,47 @@ class Thumbnail
 {
     const IMAGE_MAX_SIZE = 1080;
     
-    const NO_IMAGE = "/fwcSrc/images/noImage.jpg";
-    
-    protected $src;
-    
-    protected $pathfile;
-    
-    protected $imageDirname;
+    const NO_IMAGE = "/App/static/cms/images/noImage.jpg";
 
-    protected $imageFilename;
+    private $pathFile;
     
-    protected $imageExtension;
-    
-    protected $originalWidth;
-    
-    protected $originalHeight;
+    private $imageDirname;
 
-    protected $originalRatio;
+    private $imageFilename;
     
-    protected $imageType;
+    private $imageExtension;
     
-    protected $newWidth;
+    private $originalWidth;
     
-    protected $newHeight;
+    private $originalHeight;
 
-    protected $newRatio;
+    private $originalRatio;
     
-    protected static $image_max_width;
+    private $imageType;
     
-    protected $httpRoot;
+    private $newWidth;
     
-    protected $docroot;
+    private $newHeight;
+
+    private $newRatio;
+    
+    private static $image_max_width;
+    
+    private $httpRoot;
+    
+    private $docRoot;
 
     public function __construct(string $src = null) 
     {
         $this->httpRoot = (filter_input(INPUT_SERVER, "REQUEST_SCHEME") ?? filter_input(INPUT_SERVER, "HTTP_X_FORWARDED_PROTO"))."://".filter_input(INPUT_SERVER, "HTTP_HOST");
         
-        $this->docroot = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
+        $this->docRoot = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
         
         // set vars path and src
-        $this->setPathfile($src ?? self::NO_IMAGE);
+        $this->setPathFile($src ?? self::NO_IMAGE);
         
         // get info of image
-        $pathInfo = pathinfo($this->pathfile);
+        $pathInfo = pathinfo($this->pathFile);
         
         $this->imageDirname = $pathInfo['dirname'];
         $this->imageFilename = $pathInfo['filename'];
@@ -59,24 +57,20 @@ class Thumbnail
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
     
-    private function setPathfile(string $path) 
+    private function setPathFile(string $path)
     {
         // set vars
         if (strpos($path, $this->httpRoot) !== false) { // e.g: http(s)://host/path
-            $this->src = $path;
-            $this->pathfile = str_replace($this->httpRoot, $this->docroot, $path);
+            $this->pathFile = str_replace($this->httpRoot, $this->docRoot, $path);
             
         } elseif (substr($path, 0, 2) == "//") { // e.g: '//host/path...
-            $this->src = $path;
-            $this->pathfile = str_replace("//". filter_input(INPUT_SERVER, "HTTP_HOST"), $this->docroot, $path);
+            $this->pathFile = str_replace("//". filter_input(INPUT_SERVER, "HTTP_HOST"), $this->docRoot, $path);
             
         } elseif (substr($path,0, 5) == "/tmp/") { // '/tmp/...' temporary upload files
-            $this->src = $this->httpRoot.$path;
-            $this->pathfile = $path;
+            $this->pathFile = $path;
             
         } elseif (substr($path, 0, 1) == "/") { // e.g.: '/path/path/path
-            $this->src = $this->httpRoot.$path;
-            $this->pathfile = $this->docroot.$path;
+            $this->pathFile = $this->docRoot.$path;
             
         } else { // e.g.: path/path
             $uri = filter_input(INPUT_SERVER, "REQUEST_URI");
@@ -88,22 +82,20 @@ class Thumbnail
                 $len = strlen($exclude);
                 $dir = substr($uri, 0, -$len);
             }
-            
-            $this->src = $this->httpRoot . $dir . "/" . $path;
-            $this->pathfile = $this->docroot . $dir . "/" . $path;
+
+            $this->pathFile = $this->docRoot . $dir . "/" . $path;
         }
         
         // if file exists
-        if (!file_exists($this->pathfile)) {
-            $this->src = $this->httpRoot.self::NO_IMAGE;
-            $this->pathfile = $this->docroot.self::NO_IMAGE;
+        if (!file_exists($this->pathFile)) {
+            $this->pathFile = $this->docRoot.self::NO_IMAGE;
         }
     }
     
     private function setNewMeasures($width, $height = null) 
     {
         // original sizes
-        list($this->originalWidth, $this->originalHeight, $this->imageType) = getimagesize($this->pathfile);
+        list($this->originalWidth, $this->originalHeight, $this->imageType) = getimagesize($this->pathFile);
 
         $this->originalRatio = round($this->originalHeight / $this->originalWidth, 2);
         
@@ -165,11 +157,11 @@ class Thumbnail
         }    
         
         // thumbnails names
-        $thumbnailFile = $this->imageDirname."/thumbs/".urlencode($this->imageFilename)."(".$newWidth."w".$newHeight.").".$this->imageExtension;
+        $thumbnailFile = $this->imageDirname."/thumbs/".$this->imageFilename."(".$newWidth."w".$newHeight.").".$this->imageExtension;
         $thumbnailSrc = str_replace($_SERVER['DOCUMENT_ROOT'], "//".$_SERVER['HTTP_HOST'], $thumbnailFile);
         
         // create thumb if not exists
-        if (!file_exists($thumbnailFile) && file_exists($this->pathfile)) {
+        if (!file_exists($thumbnailFile) && file_exists($this->pathFile)) {
             $this->createThumbnail($newWidth, $newHeight, $thumbnailFile);
         }        
         
@@ -178,28 +170,31 @@ class Thumbnail
         
     private function createThumbnail($newWidth, $newHeight, $thumbnailFile) 
     {
+        $imageTemporary = null;
+        $widthScale = null;
+
         // cria uma nova imagem
         $newImage = imagecreatetruecolor($newWidth, $newHeight);
         
         // prepara a imagem original
         switch ($this->imageType) {
             case '1': 
-                $imageTemporary = imagecreatefromgif($this->pathfile); 
+                $imageTemporary = imagecreatefromgif($this->pathFile);
                 break;
             
             case '2': 
-                $imageTemporary = imagecreatefromjpeg($this->pathfile); 
+                $imageTemporary = imagecreatefromjpeg($this->pathFile);
                 break;
             
             case '3': // PNG
-                $imageTemporary = imagecreatefrompng($this->pathfile); 
+                $imageTemporary = imagecreatefrompng($this->pathFile);
                 imagealphablending($newImage, false);
                 imagesavealpha($newImage, true);
                 break;
         }   
         
         // ajusta orientação 
-        $orientation = @exif_read_data($this->pathfile)['Orientation'] ?? 1;
+        $orientation = @exif_read_data($this->pathFile)['Orientation'] ?? 1;
         
         switch ($orientation) {
             case 8: 
@@ -271,7 +266,7 @@ class Thumbnail
     
     /**
      * Upload image. 
-     * If image uploaded is larger than $image_max_widht, create thumbnail
+     * If image uploaded is larger than $image_max_width, create thumbnail
      * 
      * @param string $filename
      */
@@ -283,7 +278,7 @@ class Thumbnail
             $this->createThumbnail($this->newWidth, $this->newHeight, $_SERVER['DOCUMENT_ROOT'] . $filename);
             
         } else {
-            move_uploaded_file($this->pathfile, $_SERVER['DOCUMENT_ROOT'] . $filename);            
+            move_uploaded_file($this->pathFile, $_SERVER['DOCUMENT_ROOT'] . $filename);
         }
     }
 }
