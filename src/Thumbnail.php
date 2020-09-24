@@ -105,13 +105,13 @@ class Thumbnail
         // original sizes
         list($this->originalWidth, $this->originalHeight, $this->imageType) = getimagesize($this->pathfile);
 
-        $this->originalRatio = round($this->originalHeight / $this->originalWidth, 2);
+        $this->originalRatio = round($this->originalHeight / $this->originalWidth, 4);
         
         $this->newWidth = $width < 1 ? floor(self::$image_max_width * $width) : ($width == 1 ? $this->originalWidth : $width);
         
         $this->newHeight = isset($height) && $height !== (float) 0 ? floor($this->newWidth * $height) : floor($this->newWidth*($this->originalHeight/$this->originalWidth));
 
-        $this->newRatio = round($this->newHeight / $this->newWidth, 2);
+        $this->newRatio = round($this->newHeight / $this->newWidth, 4);
     }
 
 
@@ -237,7 +237,7 @@ class Thumbnail
             
             $imageTemporary = imagescale($imageTemporary, $widthScale);
             $src_x = (imagesx($imageTemporary) - $newWidth) / 2;
-            $src_y = (imagesy($imageTemporary) - $newHeight) / 2;            
+            $src_y = (imagesy($imageTemporary) - $newHeight) / 2;
             imagecopymerge($newImage, $imageTemporary, 0, 0, $src_x, $src_y, $newWidth, $newHeight, 100);
         }   
         
