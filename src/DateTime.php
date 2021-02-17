@@ -18,8 +18,7 @@ class DateTime
     public $literalWeekDay;
     public $literalWeekDayAbrev;
     
-    public function __construct($date, $object = NULL) 
-    {
+    public function __construct($date, $object = NULL) {
         try {
             $datetime = new \DateTime($date, $object);
             $this->year = $datetime->format("Y");
@@ -36,16 +35,15 @@ class DateTime
         } catch (Exception $e) {
         }
     }
-    
-    // formata Dia dd/mm weekday
-    /*public static function formatDateWithWeekday($data)
-    {
+
+    public static function formatISO8601(string $dateTime, int $timeZone = 0): string {
         try {
-            $date = new \DateTime($data);
+            $dt = new \DateTime($dateTime);
+            return $dt->format('Y-m-d\TH:i:s') ."-03:00";
         } catch (Exception $e) {
+            return $dateTime;
         }
-        return $date->format('d').'/'.$date->format('n').' '.self::translateWeekday($date->format('N'));
-    } */
+    }
     
     // RETORNA UM PERÍODO DE datainicio A datafim
     static function formatDate($start = null, $end = null, $mode = 'NUMERAL') 
@@ -79,7 +77,7 @@ class DateTime
         endif;
     }
     
-    static function formatDateTime($date){
+    static function formatDateTime($date) {
         try {
             $data = new \DateTime($date);
         } catch (Exception $e) {
@@ -111,7 +109,8 @@ class DateTime
     }*/
 
     // RETORNA DATA COMO TEXTO
-    public static function getTextualDate($date = NULL, $weekday = NULL) {
+    public static function getTextualDate($date = NULL, $weekday = NULL): string
+    {
         try {
             $data = $date ? new \DateTime($date) : new \DateTime();
         } catch (Exception $e) {
@@ -126,8 +125,7 @@ class DateTime
         return $week.$day." de ".$month." de ".$year;
     }
     
-    public static function translateWeekday($weekday, $abrev = NULL)
-    {
+    public static function translateWeekday($weekday, $abrev = NULL): ?string {
         if ($abrev) {
             switch ($weekday) { 
                 case "1": return "seg"; 
@@ -152,8 +150,7 @@ class DateTime
         return null;
     }
 
-    public static function translateMonth($month)
-    {
+    public static function translateMonth($month): ?string {
         switch ($month) { 
             case "1": return "janeiro"; 
             case "2": return "fevereiro";  
@@ -171,14 +168,12 @@ class DateTime
         return null;
     }
 
-    public static function formateCompleteDateTimeUTC($date)
-    {
+    public static function formateCompleteDateTimeUTC($date) {
         $parse = date_parse_from_format("Y-m-d H:i:s", $date);
         return date("c", mktime($parse['hour'], $parse['minute'], $parse['second'], $parse['month'], $parse['day'], $parse['year']));
     }
     
-    public static function formatTime($time) 
-    {
+    public static function formatTime($time)  {
         $replace = str_replace(":", "%s", $time);
         $string = sprintf($replace, "h", "min");
         return substr($string, 0, -5);
