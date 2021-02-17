@@ -26,7 +26,7 @@ class StructuredData
                 return $this->organizeArray($type, $data);
             } else {
                 foreach ($data as $valueItem) {
-                    $newData[] = self::getArrayLd($valueItem);
+                    $newData[] = is_array($valueItem) ? self::getArrayLd($valueItem) : $valueProperty;
                 }
                 return $newData;
             }
@@ -44,7 +44,6 @@ class StructuredData
                 unset($value['publisherType']);
                 break;
             case "ContactPoint":
-                $value['contactType'] = $value['contactType'] || $value['contactType'] !='' ? $value['contactType'] : "General";
                 unset($value['whatsapp']);
                 unset($value['position']);
                 unset($value['obs']);
@@ -61,7 +60,7 @@ class StructuredData
             case "LocalBusiness":
                 $value["@id"] = "https://plinct.com.br/schema/LocaBusiness";
                 $value['description'] = strip_tags($value['description']);
-                $value['address'] = self::getArrayLd($value,'address');
+                $value['address'] = $value['location']['address'] ?? $value['address'] && self::getArrayLd($value,'address');
                 $value['image'] = self::$HOST . ImageObject::getRepresentativeImageOfPage($value['image']);
                 $value['telephone'] = $value['contactPoint'][0]['telephone'];
                 $value['contactPoint'] = self::getArrayLd($value,'contactPoint');
@@ -73,6 +72,7 @@ class StructuredData
             case "ImageObject":
                 $value['contentUrl'] = self::$HOST . $value['contentUrl'];
                 $value['url'] = $value['contentUrl'];
+                unset($value['href']);
                 break;
             case "Organization":
                 $value['location'] = self::getArrayLd($value,'location');
