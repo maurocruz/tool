@@ -15,12 +15,14 @@ class Sitemap
     private $urlset;
     private $url;
     private $extension;
+    private static $HOST;
 
     public function __construct($filename) {
         $this->filename = $filename;
         $this->xml = new DOMDocument($this->version, $this->encoding);
         $this->urlset = $this->xml->createElement("urlset");
         $this->urlset->setAttribute("xmlns", self::$xmlns);
+        self::$HOST = (filter_input(INPUT_SERVER, 'HTTPS') == 'on' ? "https" : "http") . ":" . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . filter_input(INPUT_SERVER,'HTTP_HOST');
     }
 
     public function saveSitemap($data, $extension = "simple") {
@@ -54,8 +56,9 @@ class Sitemap
 
     private function appendImage($value) {
         foreach ($value as $item) {
+            $loc = strpos($item['contentUrl'], self::$HOST) === false ? self::$HOST.$item['contentUrl'] : $item['contentUrl'];
             $imageElement = $this->xml->createElement("image:image");
-            $imageElement->appendChild($this->xml->createElement("image:loc",$item['contentUrl']));
+            $imageElement->appendChild($this->xml->createElement("image:loc",$loc));
             if(isset($item['caption'])) $imageElement->appendChild($this->xml->createElement("image:caption",strip_tags($item['caption'])));
             $imageElement->appendChild($this->xml->createElement("image:license",$item['license']));
             $this->url->appendChild($imageElement);
