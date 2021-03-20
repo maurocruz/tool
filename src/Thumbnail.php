@@ -1,21 +1,16 @@
 <?php
-
 namespace Plinct\Tool;
 
 use function exif_read_data;
 
-class Thumbnail
-{
+class Thumbnail extends Image {
     const IMAGE_MAX_SIZE = 1080;
-    const NO_IMAGE = "/App/static/cms/images/noImage.jpg";
+    const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+
     private $pathFile;
     private $imageDirname;
     private $imageFilename;
     private $imageExtension;
-    private $originalWidth;
-    private $originalHeight;
-    private $originalRatio;
-    private $imageType;
     private $newWidth;
     private $newHeight;
     private $newRatio;
@@ -23,8 +18,19 @@ class Thumbnail
     private $httpRoot;
     private $docRoot;
 
-    public function __construct(string $src = null) 
-    {
+    public function __construct(string $src = null) {
+        $image = parent::$IMAGE;
+        if ($image && $image->src == $src) {
+            parent::setRemote($image->remote);
+            parent::setValidate($image->validate);
+            if ($image->validate) {
+                parent::setSrc($image->src);
+                parent::setSizes($image->imageSize);
+            }
+        } else {
+            parent::__construct($src);
+        }
+
         $this->httpRoot = (filter_input(INPUT_SERVER, "REQUEST_SCHEME") ?? filter_input(INPUT_SERVER, "HTTP_X_FORWARDED_PROTO"))."://".filter_input(INPUT_SERVER, "HTTP_HOST");
         $this->docRoot = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
         // set vars path and src
@@ -36,9 +42,9 @@ class Thumbnail
         $this->imageExtension = $pathInfo['extension'] ?? null;
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
-    
-    private function setPathFile(string $path)
-    {
+
+
+    private function setPathFile(string $path) {
         // set vars
         if (strpos($path, $this->httpRoot) !== false) { // e.g: http(s)://host/path
             $this->pathFile = str_replace($this->httpRoot, $this->docRoot, $path);
@@ -65,46 +71,53 @@ class Thumbnail
         }
     }
     
-    private function setNewMeasures($width, $height = null) 
-    {
-        // original sizes
-        list($this->originalWidth, $this->originalHeight, $this->imageType) = getimagesize($this->pathFile);
-        $this->originalRatio = round($this->originalHeight / $this->originalWidth, 4);
-        $this->newWidth = $width < 1 ? floor(self::$image_max_width * $width) : ($width == 1 ? $this->originalWidth : $width);
-        $this->newHeight = isset($height) && $height !== (float) 0 ? floor($this->newWidth * $height) : floor($this->newWidth*($this->originalHeight/$this->originalWidth));
+    private function setNewMeasures($width, $height = null) {
+        $this->newWidth = $width < 1 ? floor(self::$image_max_width * $width) : ($width == 1 ? parent::getWidth() : $width);
+        $this->newHeight = isset($height) && $height !== (float) 0 ? floor($this->newWidth * $height) : floor($this->newWidth*(parent::getHeight()/parent::getWidth()));
         $this->newRatio = round($this->newHeight / $this->newWidth, 4);
     }
 
-    public function getThumbnailAsAttributesImg($value) 
-    {
-        // new sizes
-        $this->setNewMeasures((float) $value['width'], isset($value['height']) ? (float) $value['height'] : null);
-        // alt
-        $attributes['alt'] = $value['title'] ?? $value['caption'] ?? "Imagem";
-        // srcset  
-        $attributes = $this->sizesAndSrcset($attributes, $this->newWidth);
-        $measure23 = floor(2*(self::$image_max_width/3));
-        if ($this->newWidth > $measure23) {
-            $attributes = $this->sizesAndSrcset($attributes, $measure23);
+    public function getThumbnailAsAttributesImg($value): array {
+        if ($this->remote) {
+            return ["src" => $this->src];
+        } elseif ($this->validate) {
+            // new sizes
+            $this->setNewMeasures((float) $value['width'], isset($value['height']) ? (float) $value['height'] : null);
+            // srcset
+            // alt
+            $attributes['alt'] = $value['title'] ?? $value['caption'] ?? "Imagem";
+
+            $attributes = $this->sizesAndSrcset($attributes, $this->newWidth);
+
+            $measure23 = floor(2 * (self::$image_max_width / 3));
+            if ($this->newWidth > $measure23) {
+                $attributes = $this->sizesAndSrcset($attributes, $measure23);
+            }
+            // src
+            $finalWidth = $this->newWidth > parent::getWidth() ? parent::getWidth() : $this->newWidth;
+            $finalHeight = $finalWidth * ($this->newHeight / $this->newWidth);
+
+            $attributes['src'] = $this->getThumbnail($finalWidth, floor($finalHeight));
+
+            return $attributes;
         }
-        // src
-        $finalWidth = $this->newWidth > $this->originalWidth ? $this->originalWidth : $this->newWidth;
-        $finalHeight = $finalWidth*($this->newHeight/$this->newWidth);
-        $attributes['src'] = $this->getThumbnail($finalWidth, floor($finalHeight));
-        return $attributes;
+        return [ "src" => self::NO_IMAGE ];
     }
 
     private function sizesAndSrcset($attributes, $size)
-    {  
+    {
         $mediaQuery = "(min-width: ".$size."px) ".$size."px";
+
         $attributes['sizes'] = isset($attributes['sizes']) ? $attributes['sizes'].", ".$mediaQuery : $mediaQuery;
+
         $srcset = $this->getThumbnail($size, floor($size*($this->newHeight/$this->newWidth)))." ".$size."w";
+
         $attributes['srcset'] = isset($attributes['srcset']) ? $attributes['srcset'].", ".$srcset : $srcset;
+
         return $attributes;
     }
     
-    public function getThumbnail($newWidth, $newHeight = null)
-    {
+    public function getThumbnail($newWidth, $newHeight = null) {
         if ($newWidth < 1 || $newHeight < 1) {
             $this->setNewMeasures($newWidth, $newHeight);
             $newWidth = $this->newWidth;
@@ -113,6 +126,7 @@ class Thumbnail
         // thumbnails names
         $thumbnailFile = $this->imageDirname."/thumbs/".$this->imageFilename."(".$newWidth."w".$newHeight.").".$this->imageExtension;
         $thumbnailSrc = str_replace($_SERVER['DOCUMENT_ROOT'], "//".$_SERVER['HTTP_HOST'], $thumbnailFile);
+
         // create thumb if not exists
         if (!file_exists($thumbnailFile) && file_exists($this->pathFile)) {
             $this->createThumbnail($newWidth, $newHeight, $thumbnailFile);
@@ -127,7 +141,7 @@ class Thumbnail
         // cria uma nova imagem
         $newImage = imagecreatetruecolor($newWidth, $newHeight);
         // prepara a imagem original
-        switch ($this->imageType) {
+        switch (parent::getType()) {
             case '1': 
                 $imageTemporary = imagecreatefromgif($this->pathFile);
                 break;
@@ -154,22 +168,22 @@ class Thumbnail
                 break;
         }
         // copia a imagem em novas dimensões
-        if ($this->newRatio == $this->originalRatio) {
-            imagecopyresized($newImage, $imageTemporary, 0, 0, 0, 0, $newWidth, $newHeight, $this->originalWidth, $this->originalHeight);
+        if ($this->newRatio == parent::getRatio()) {
+            imagecopyresized($newImage, $imageTemporary, 0, 0, 0, 0, $newWidth, $newHeight, parent::getWidth(), parent::getHeight());
         }
         // recorta a imagem
         else {
             // PAISAGEM
             if ($this->newRatio < 1) {
-                $widthScale = $this->originalRatio >= $this->newRatio ? $newWidth : ceil($newHeight / $this->originalRatio);
+                $widthScale = parent::getRatio() >= $this->newRatio ? $newWidth : ceil($newHeight / parent::getRatio());
             }
             // RETRATO
             elseif ($this->newRatio > 1) {
-                $widthScale = $orientation == 1 ? ceil($newHeight / $this->originalRatio) : ceil($newHeight * $this->originalRatio);
+                $widthScale = $orientation == 1 ? ceil($newHeight / parent::getRatio()) : ceil($newHeight * parent::getRatio());
             }
             // QUADRADO
             elseif ($this->newRatio == 1) {
-                $widthScale = $orientation == 1 ? ceil($newWidth / $this->originalRatio) : $newWidth;
+                $widthScale = $orientation == 1 ? ceil($newWidth / parent::getRatio()) : $newWidth;
             }
             $imageTemporary = imagescale($imageTemporary, $widthScale);
             $src_x = (imagesx($imageTemporary) - $newWidth) / 2;
@@ -183,7 +197,7 @@ class Thumbnail
             chmod($dirname, 0777);
         }
         // save image
-        switch ($this->imageType) {
+        switch (parent::getType()) {
             case '1': 
                 imagegif($newImage, $thumbnailFile);
                 break;
@@ -207,7 +221,7 @@ class Thumbnail
     public function uploadImage(string $filename) 
     {
         $this->setNewMeasures(self::$image_max_width);
-        if ($this->originalWidth > self::$image_max_width) {
+        if (parent::getWidth() > self::$image_max_width) {
             $this->createThumbnail($this->newWidth, $this->newHeight, $_SERVER['DOCUMENT_ROOT'] . $filename);
         } else {
             $path = $_SERVER['DOCUMENT_ROOT'] . $filename;
@@ -218,16 +232,15 @@ class Thumbnail
         }
     }
 
-    private function makeDir($path)
-    {
+    private function makeDir($path) {
         $dir = null;
         foreach (explode("/",dirname($path)) as $value) {
-            $newdir = $dir.$value;
-            if (!is_dir($newdir) && $newdir != '') {
-                mkdir($newdir);
-                chmod($newdir,0777);
+            $newDir = $dir.$value;
+            if (!is_dir($newDir) && $newDir != '') {
+                mkdir($newDir);
+                chmod($newDir,0777);
             }
-            $dir = $newdir.DIRECTORY_SEPARATOR;
+            $dir = $newDir.DIRECTORY_SEPARATOR;
         }
           return $path;
     }
