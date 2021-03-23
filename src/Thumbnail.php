@@ -7,30 +7,19 @@ class Thumbnail extends Image {
     const IMAGE_MAX_SIZE = 1080;
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
 
-    private $pathFile;
+    private string $pathFile;
     private $imageDirname;
     private $imageFilename;
     private $imageExtension;
-    private $newWidth;
-    private $newHeight;
-    private $newRatio;
+    private int $newWidth;
+    private int $newHeight;
+    private int $newRatio;
     private static $image_max_width;
-    private $httpRoot;
+    private string $httpRoot;
     private $docRoot;
 
     public function __construct(string $src = null) {
-        $image = parent::$IMAGE;
-        if ($image && $image->src == $src) {
-            parent::setRemote($image->remote);
-            parent::setValidate($image->validate);
-            if ($image->validate) {
-                parent::setSrc($image->src);
-                parent::setSizes($image->imageSize);
-            }
-        } else {
-            parent::__construct($src);
-        }
-
+        parent::__construct($src);
         $this->httpRoot = (filter_input(INPUT_SERVER, "REQUEST_SCHEME") ?? filter_input(INPUT_SERVER, "HTTP_X_FORWARDED_PROTO"))."://".filter_input(INPUT_SERVER, "HTTP_HOST");
         $this->docRoot = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
         // set vars path and src
@@ -42,7 +31,6 @@ class Thumbnail extends Image {
         $this->imageExtension = $pathInfo['extension'] ?? null;
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
-
 
     private function setPathFile(string $path) {
         // set vars
@@ -104,16 +92,11 @@ class Thumbnail extends Image {
         return [ "src" => self::NO_IMAGE ];
     }
 
-    private function sizesAndSrcset($attributes, $size)
-    {
+    private function sizesAndSrcset($attributes, $size) {
         $mediaQuery = "(min-width: ".$size."px) ".$size."px";
-
         $attributes['sizes'] = isset($attributes['sizes']) ? $attributes['sizes'].", ".$mediaQuery : $mediaQuery;
-
         $srcset = $this->getThumbnail($size, floor($size*($this->newHeight/$this->newWidth)))." ".$size."w";
-
         $attributes['srcset'] = isset($attributes['srcset']) ? $attributes['srcset'].", ".$srcset : $srcset;
-
         return $attributes;
     }
     
