@@ -4,40 +4,30 @@ namespace Plinct\Tool;
 use Plinct\Cms\App;
 
 class Image {
-    public static $IMAGE;
-    protected $source;
-    protected $remote;
-    protected $validate = false;
-    protected $imageSize;
-    private $ratio;
-    private $fileSize;
-    protected $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    public static Image $IMAGE;
+    protected string $source;
+    protected bool $remote;
+    protected bool $validate = false;
+    protected array $imageSize = [];
+    private int $ratio;
+    private ?int $fileSize = null;
+    protected string $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
 
-    public function __construct($source) {
+    public function __construct(string $source) {
         $this->source = $source;
         $this->setRemote();
-        $this->setValidate();
-        if ($this->validate) {
-            $this->setSrc();
-            $this->setSizes();
-        }
+        $this->setSrc();
         self::$IMAGE = $this;
     }
 
-    protected function setRemote($remote = null) {
-        if ($remote) {
-            $this->remote = $remote;
-        } else {
-            $parseUrl = parse_url($this->source);
-            $this->remote = array_key_exists('host', $parseUrl) ? filter_input(INPUT_SERVER, 'HTTP_HOST') !== $parseUrl['host'] : false;
-        }
+    private function setRemote() {
+        $parseUrl = parse_url($this->source);
+        $this->remote = array_key_exists('host', $parseUrl) ? filter_input(INPUT_SERVER, 'HTTP_HOST') !== $parseUrl['host'] : false;
     }
 
-    protected function setValidate($validate = null) {
+    private function setValidate() {
         $filename = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT') . $this->source;
-        if ($validate) {
-            $this->validate = $validate;
-        } elseif ($this->remote) {
+        if ($this->remote) {
             $data = (new Curl($this->source))->getImageData();
             $this->validate = $data['validate'];
             $this->fileSize = $data['fileSize'];
@@ -48,17 +38,14 @@ class Image {
         }
     }
 
-    protected function setSizes($imageSize = null) {
-        if ($imageSize) {
-            $this->imageSize = $imageSize;
-        } elseif (!$this->imageSize) {
-            $filename = $this->remote ? $this->source : filter_input(INPUT_SERVER, 'DOCUMENT_ROOT') . $this->source;
-            $this->imageSize = getimagesize($filename);
-        }
+    private function setSizes() {
+        if ($this->validate === null) $this->setValidate();
+        $filename = $this->remote ? $this->source : filter_input(INPUT_SERVER, 'DOCUMENT_ROOT') . $this->source;
+        $this->imageSize = getimagesize($filename);
         $this->ratio = round($this->getHeight() / $this->getWidth(), 4);
     }
 
-    protected function setSrc($src = null) {
+    private function setSrc($src = null) {
         if ($src) {
             $this->src = $src;
         } elseif ($this->remote) {
@@ -77,24 +64,29 @@ class Image {
         return $this->imageSize;
     }
     public function getWidth() {
+        if (!$this->imageSize) $this->setSizes();
         return $this->imageSize[0];
     }
     public function getHeight() {
+        if (!$this->imageSize) $this->setSizes();
         return $this->imageSize[1];
     }
     public function getType() {
+        if (!$this->imageSize) $this->setSizes();
         return $this->imageSize[2];
     }
     public function getMimeType() {
+        if (!$this->imageSize) $this->setSizes();
         return $this->imageSize['mime'];
     }
-    public function getFileSize() {
+    public function getFileSize(): ?int {
+        if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
     }
-    public function getRatio() {
+    public function getRatio(): int {
         return $this->ratio;
     }
-    public function getSource() {
+    public function getSource(): string {
         return $this->source;
     }
     public function getSrc(): string {
