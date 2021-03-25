@@ -13,8 +13,8 @@ class Image {
     private ?int $fileSize = null;
     protected string $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
 
-    public function __construct(string $source) {
-        $this->source = $source;
+    public function __construct(string $source = null) {
+        $this->source = $source ?? $this->src;
         $this->setRemote();
         $this->setSrc();
         self::$IMAGE = $this;
