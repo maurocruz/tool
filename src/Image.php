@@ -9,7 +9,7 @@ class Image {
     protected bool $remote;
     protected bool $validate = false;
     protected array $imageSize = [];
-    private int $ratio;
+    private float $ratio;
     private ?int $fileSize = null;
     protected string $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
 
@@ -25,14 +25,14 @@ class Image {
         $this->remote = array_key_exists('host', $parseUrl) ? filter_input(INPUT_SERVER, 'HTTP_HOST') !== $parseUrl['host'] : false;
     }
 
-    private function setValidate() {
+    protected function setValidate() {
         $filename = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT') . $this->source;
         if ($this->remote) {
             $data = (new Curl($this->source))->getImageData();
             $this->validate = $data['validate'];
             $this->fileSize = $data['fileSize'];
             $this->imageSize = $data['imageSize'];
-        } elseif(is_file($filename) && is_readable($filename) && !is_executable($filename) && strstr(mime_content_type($filename), "/", true) == "image") {
+        } elseif (is_file($filename) && is_readable($filename) && /*!is_executable($filename) &&*/ strstr(mime_content_type($filename), "/", true) == "image") {
             $this->validate = true;
             $this->fileSize = filesize($filename);
         }
@@ -60,6 +60,9 @@ class Image {
     public function is_valide(): bool {
         return $this->validate;
     }
+    public function getImageName(): string {
+        return basename($this->source,".".$this->getExtension());
+    }
     public function getImageSize(): array {
         return $this->imageSize;
     }
@@ -83,7 +86,7 @@ class Image {
         if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
     }
-    public function getRatio(): int {
+    public function getRatio(): float {
         return $this->ratio;
     }
     public function getSource(): string {
@@ -91,5 +94,8 @@ class Image {
     }
     public function getSrc(): string {
         return $this->src;
+    }
+    public function getExtension(): string {
+        return pathinfo($this->source)['extension'];
     }
 }
