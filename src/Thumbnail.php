@@ -6,10 +6,10 @@ use function exif_read_data;
 class Thumbnail extends Image {
     const IMAGE_MAX_SIZE = 1080;
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
-    private string $pathFile;
-    private int $newWidth;
-    private int $newHeight;
-    private float $newRatio;
+    private $pathFile;
+    private $newWidth;
+    private $newHeight;
+    private $newRatio;
     private static $image_max_width;
 
     public function __construct(string $src = null) {
