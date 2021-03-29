@@ -1,17 +1,15 @@
 <?php
 namespace Plinct\Tool;
 
-use Plinct\Cms\App;
-
 class Image {
-    public static Image $IMAGE;
-    protected string $source;
-    protected bool $remote;
-    protected bool $validate = false;
-    protected array $imageSize = [];
-    private float $ratio;
-    private ?int $fileSize = null;
-    protected string $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    public static $IMAGE;
+    protected $source;
+    protected $remote;
+    protected $validate = false;
+    protected $imageSize = [];
+    private $ratio;
+    private $fileSize = null;
+    protected $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
 
     public function __construct(string $source = null) {
         $this->source = $source ?? $this->src;
@@ -51,7 +49,8 @@ class Image {
         } elseif ($this->remote) {
             $this->src = $this->source;
         } else {
-            $this->src = App::$HOST . $this->source;
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? "https" : "http";
+            $this->src = $protocol . "://" . $_SERVER['HTTP_HOST'] . $this->source;
         }
     }
     public function is_remote(): bool {

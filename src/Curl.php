@@ -9,7 +9,7 @@ class Curl {
     /**
      * @var string
      */
-    private string $basePath;
+    private $basePath;
 
     /**
      * Curl constructor.
