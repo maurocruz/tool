@@ -24,7 +24,7 @@ class Curl {
      * @return string
      */
     private function getUrl(string $relativeUrl): string {
-        return $this->basePath . $relativeUrl;
+        return $this->basePath . (strpos($this->basePath, '/', -1) === false ? "/" : null) . $relativeUrl;
     }
 
     /**
@@ -40,10 +40,10 @@ class Curl {
     /**
      * @param string $relativeUrl
      * @param array $params
-     * @param string $token
+     * @param string|null $token
      * @return bool|string
      */
-    public function post(string $relativeUrl, array $params, string $token) {
+    public function post(string $relativeUrl, array $params, string $token = null) {
         return $this->request("post", $relativeUrl, $params, $token);
     }
 
@@ -84,7 +84,7 @@ class Curl {
         if ($token) $headers[] = "Authorization: Bearer $token";
         curl_setopt($handle, CURLOPT_HTTPHEADER, $headers);
         // METHOD
-        curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         // PARAMS
         if ($params) curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
         // disable for production
@@ -92,8 +92,13 @@ class Curl {
         curl_setopt($handle, CURLOPT_PROXY_SSL_VERIFYPEER, false);
         // EXECUTE
         $exec = curl_exec($handle);
+        if ($exec === false) {
+            $response = curl_error($handle);
+        } else {
+            $response = $exec;
+        }
         curl_close($handle);
-        return $exec;
+        return $response;
     }
 
     /**
