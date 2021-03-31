@@ -6,7 +6,6 @@ use function exif_read_data;
 class Thumbnail extends Image {
     const IMAGE_MAX_SIZE = 1080;
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
-    private $pathFile;
     private $newWidth;
     private $newHeight;
     private $newRatio;
@@ -17,18 +16,15 @@ class Thumbnail extends Image {
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
 
-    private function pathFile(): string {
-        return $_SERVER['DOCUMENT_ROOT'] . $this->getSource();
-    }
-
     private function thumbFile(): string {
         $thumbName = $this->getImageName() . "(" . $this->newWidth ."w".$this->newHeight.").".$this->getExtension();
-        return dirname($this->getSource()) . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . $thumbName;
+        return dirname($this->getPathFile()) . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . $thumbName;
     }
 
     private function thumbSrc(): string {
         $parseUrl = parse_url($this->getSrc());
-        return $parseUrl['scheme'] . "://" . $parseUrl['host'] . $this->thumbFile();
+        $thumbPath = str_replace(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), "", $this->thumbFile());
+        return $parseUrl['scheme'] . "://" . $parseUrl['host'] . $thumbPath;
     }
     
     private function setNewMeasures($width, $height = null) {
@@ -38,30 +34,30 @@ class Thumbnail extends Image {
     }
 
     public function getThumbnailAsAttributesImg($value): array {
-        parent::setValidate();
-        if ($this->remote) {
-            return ["src" => $this->src];
-        } elseif ($this->validate) {
-            // new sizes
+        // CHECK IF IS VALID IMAGE
+        if (parent::getRemote()) {
+            return ["src" => parent::getSrc()];
+        } elseif (parent::getValidate()) {
+            // NEW SIZES
             $this->setNewMeasures((float) $value['width'], isset($value['height']) ? (float) $value['height'] : null);
-            // srcset
-            // alt
+            // ALT ATTRIBUTE
             $attributes['alt'] = $value['title'] ?? $value['caption'] ?? "Imagem";
-
+            // SRCSET ATTRIBUTES
             $attributes = $this->sizesAndSrcset($attributes, $this->newWidth);
-
+            // if large new width
             $measure23 = floor(2 * (self::$image_max_width / 3));
             if ($this->newWidth > $measure23) {
                 $attributes = $this->sizesAndSrcset($attributes, $measure23);
             }
-            // src
+            // SRC ATTRIBUTE
             $finalWidth = $this->newWidth > parent::getWidth() ? parent::getWidth() : $this->newWidth;
             $finalHeight = $finalWidth * ($this->newHeight / $this->newWidth);
-
+            // THUMBNAIL
             $attributes['src'] = $this->getThumbnail($finalWidth, floor($finalHeight));
-
+            // OUTUPUT
             return $attributes;
         }
+        // NO IMAGE
         return [ "src" => self::NO_IMAGE ];
     }
 
@@ -78,7 +74,7 @@ class Thumbnail extends Image {
             $this->setNewMeasures($newWidth, $newHeight);
         }
         // create thumb if not exists
-        if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $this->thumbFile()) && file_exists($this->pathFile())) {
+        if (!file_exists($this->thumbFile()) && file_exists(parent::getPathFile())) {
             $this->createThumbnail();
         }
         return $this->thumbSrc();
@@ -92,19 +88,19 @@ class Thumbnail extends Image {
         // prepara a imagem original
         switch (parent::getType()) {
             case '1': 
-                $imageTemporary = imagecreatefromgif($this->pathFile());
+                $imageTemporary = imagecreatefromgif($this->getPathFile());
                 break;
             case '2': 
-                $imageTemporary = imagecreatefromjpeg($this->pathFile());
+                $imageTemporary = imagecreatefromjpeg($this->getPathFile());
                 break;
             case '3': // PNG
-                $imageTemporary = imagecreatefrompng($this->pathFile());
+                $imageTemporary = imagecreatefrompng($this->getPathFile());
                 imagealphablending($newImage, false);
                 imagesavealpha($newImage, true);
                 break;
         }
         // ajusta orientação 
-        $orientation = @exif_read_data($this->pathFile())['Orientation'] ?? 1;
+        $orientation = @exif_read_data($this->getPathFile())['Orientation'] ?? 1;
         switch ($orientation) {
             case 8: 
                 $imageTemporary = imagerotate($imageTemporary, 90, 0); 
@@ -140,7 +136,7 @@ class Thumbnail extends Image {
             imagecopymerge($newImage, $imageTemporary, 0, 0, $src_x, $src_y, $this->newWidth, $this->newHeight, 100);
         }
         // create dir thumbs 
-        $dirname = dirname($_SERVER['DOCUMENT_ROOT'] . $this->thumbFile());
+        $dirname = dirname($this->thumbFile());
         if (!is_dir($dirname)) {
             mkdir($dirname);
             chmod($dirname, 0777);
@@ -148,13 +144,13 @@ class Thumbnail extends Image {
         // save image
         switch (parent::getType()) {
             case '1': 
-                imagegif($newImage, $_SERVER['DOCUMENT_ROOT'] . $this->thumbFile());
+                imagegif($newImage, $this->thumbFile());
                 break;
             case '2':
-                imagejpeg($newImage, $_SERVER['DOCUMENT_ROOT'] . $this->thumbFile());
+                imagejpeg($newImage, $this->thumbFile());
                 break;
             case '3': 
-                imagepng($newImage, $_SERVER['DOCUMENT_ROOT'] . $this->thumbFile());
+                imagepng($newImage, $this->thumbFile());
                 break;
         }
         imagedestroy($newImage);
@@ -167,8 +163,7 @@ class Thumbnail extends Image {
      * 
      * @param string $filename
      */
-    public function uploadImage(string $filename) 
-    {
+    public function uploadImage(string $filename) {
         $this->setNewMeasures(self::$image_max_width);
         if (parent::getWidth() > self::$image_max_width) {
             $this->createThumbnail();
@@ -177,7 +172,7 @@ class Thumbnail extends Image {
             if(is_dir(dirname($path)) === false) {
                 $path = $this->makeDir($path);
             }
-            move_uploaded_file($this->pathFile, $path);
+            move_uploaded_file($this->getPathFile(), $path);
         }
     }
 
