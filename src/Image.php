@@ -13,13 +13,26 @@ class Image {
     private $ratio;
     private $fileSize = null;
     private $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    private $docRoot;
+    private $requestUri;
+    private $httpHost;
 
     public function __construct(string $source = null) {
         $this->source = $source ?? $this->src;
+        // SERVER REQUESTS
+        $this->setServerRequests();
         // PARSE URL
         $this->setParseUrl();
+        // PATH FILE
+        $this->setPathFile();
         // SET SRC
         $this->setSrc();
+    }
+
+    private function setServerRequests() {
+        $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
+        $this->requestUri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+        $this->httpHost = filter_input(INPUT_SERVER, 'HTTP_HOST');
     }
 
     private function setParseUrl() {
@@ -30,11 +43,11 @@ class Image {
     }
 
     protected function setPathFile() {
-        $this->pathFile = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT') . $this->path;
+        $this->pathFile = substr($this->path,0,1) != "/"  ?  $this->docRoot . $this->requestUri . $this->path  :  $this->docRoot . $this->path;
     }
 
     private function setRemote() {
-        $this->remote = $this->host ? filter_input(INPUT_SERVER, 'HTTP_HOST') !== $this->host : false;
+        $this->remote = $this->host ? $this->httpHost !== $this->host : false;
     }
 
     private function setSrc($src = null) {
@@ -44,8 +57,8 @@ class Image {
             $this->src = $this->source;
         } else {
             if (!$this->scheme) {
-                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? "https" : "http";
-                $this->src = $protocol . "://" . $_SERVER['HTTP_HOST'] . $this->source;
+                $protocol = filter_input(INPUT_SERVER, 'HTTPS') != 'off' ? "https" : "http";
+                $this->src = str_replace($this->docRoot, $protocol . "://" . $this->httpHost, $this->pathFile);
             } else {
                 $this->src = $this->source;
             }
@@ -67,16 +80,6 @@ class Image {
         return false;
     }
 
-    protected function getValidate() {
-        if($this->validate === null) $this->setValidate();
-        return $this->validate;
-    }
-
-    protected function getPathFile(): string {
-        if ($this->pathFile === null) $this->setPathFile();
-        return $this->pathFile;
-    }
-
     private function setSizes() {
         if ($this->validate === null) $this->setValidate();
         $filename = $this->getPathFile();
@@ -88,7 +91,13 @@ class Image {
             $this->imageSize[1] = 0;
         }
     }
-
+    protected function getValidate() {
+        if($this->validate === null) $this->setValidate();
+        return $this->validate;
+    }
+    protected function getPathFile(): string {
+        return $this->pathFile;
+    }
     public function getRemote(): bool {
         if ($this->remote === null) $this->setRemote();
         return $this->remote;

@@ -22,7 +22,7 @@ class Thumbnail extends Image {
     }
 
     private function thumbSrc(): string {
-        $parseUrl = parse_url($this->getSrc());
+        $parseUrl = parse_url(parent::getSrc());
         $thumbPath = str_replace(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), "", $this->thumbFile());
         return $parseUrl['scheme'] . "://" . $parseUrl['host'] . $thumbPath;
     }
