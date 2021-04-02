@@ -39,7 +39,7 @@ class Thumbnail extends Image {
      * @return mixed
      */
     public function getThumbPath(): string {
-        return sprintf("%s/thumb/%s(%sw%s).%s", parent::getDirname(), parent::getFilename(), $this->newWidth, $this->newHeight, parent::getExtension());
+        return sprintf("%s/thumbs/%s(%sw%s).%s", parent::getDirname(), parent::getFilename(), $this->newWidth, $this->newHeight, parent::getExtension());
     }
 
     /**
