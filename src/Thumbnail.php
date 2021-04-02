@@ -12,24 +12,55 @@ class Thumbnail extends Image {
     private static $image_max_width;
     private $thumbSrc;
 
+    /**
+     * Thumbnail constructor.
+     * @param string|null $src
+     */
     public function __construct(string $src = null) {
         parent::__construct($src);
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
 
-    private function thumbFile(): string {
-        $thumbName = $this->getImageName() . "(" . $this->newWidth ."w".$this->newHeight.").".$this->getExtension();
-        return dirname($this->getPathFile()) . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . $thumbName;
+    /**
+     * @param mixed $newWidth
+     */
+    private function setNewWidth($newWidth): void {
+        $this->newWidth = $newWidth < 1 ? floor(self::$image_max_width * $newWidth) : ($newWidth == 1 && parent::getWidth() != 0 ? parent::getWidth() : $newWidth);
     }
 
+    /**
+     * @param mixed $newHeight
+     */
+    private function setNewHeight($newHeight): void {
+        $this->newHeight = $newHeight && $newHeight !== (float) 0 ? floor($this->newWidth * $newHeight) : floor($this->newWidth * (parent::getHeight()/parent::getWidth()));
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getThumbPath(): string {
+        return sprintf("%s/thumb/%s(%sw%s).%s", parent::getDirname(), parent::getFilename(), $this->newWidth, $this->newHeight, parent::getExtension());
+    }
+
+    /**
+     * @return string
+     */
+    private function thumbFile(): string {
+        $thumbPath = $this->getFilename() . "(" . $this->newWidth ."w".$this->newHeight.").".$this->getExtension();
+        return dirname($this->getPathFile()) . DIRECTORY_SEPARATOR . "thumbs" . DIRECTORY_SEPARATOR . $thumbPath;
+    }
+
+    /**
+     * THUMBNAIL SRC ATTRIBUTE
+     */
     private function setThumbSrc() {
         $parseUrl = parse_url(parent::getSrc());
-        $this->thumbSrc = $parseUrl['scheme'] . "://" . $parseUrl['host'] . $this->thumbFile();
+        $this->thumbSrc = $parseUrl['scheme'] . "://" . $parseUrl['host'] . $this->getThumbPath();
     }
     
-    private function setNewMeasures($width, $height = null) {
-        $this->newWidth = $width < 1 ? floor(self::$image_max_width * $width) : ($width == 1 ? parent::getWidth() : $width);
-        $this->newHeight = isset($height) && $height !== (float) 0 ? floor($this->newWidth * $height) : floor($this->newWidth*(parent::getHeight()/parent::getWidth()));
+    private function setNewMeasures($newWidth, $newHeight = null) {
+        $this->setNewWidth($newWidth);
+        $this->setNewHeight($newHeight);
         $this->newRatio = round($this->newHeight / $this->newWidth, 4);
     }
 
@@ -75,9 +106,8 @@ class Thumbnail extends Image {
     }
     
     public function getThumbnail($newWidth, $newHeight = null): string {
-        if ($newWidth < 1 || $newHeight < 1) {
-            $this->setNewMeasures($newWidth, $newHeight);
-        }
+        // SET NEW SIZES
+        $this->setNewMeasures($newWidth, $newHeight);
         // create thumb if not exists
         if (!file_exists($this->thumbFile()) && file_exists(parent::getPathFile())) {
             $this->createThumbnail();

@@ -7,9 +7,16 @@ class Image {
     private $host;
     private $path;
     private $pathFile;
+    private $dirname;
+    private $basename;
+    private $extension;
+    private $filename;
+
     private $remote;
     private $validate = null;
     private $imageSize = [];
+    private $width;
+    private $height;
     private $ratio;
     private $fileSize = null;
     private $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
@@ -24,7 +31,7 @@ class Image {
         // PARSE URL
         $this->setParseUrl();
         // PATH FILE
-        $this->setPathFile();
+        $this->setPathInfo();
         // SET SRC
         $this->setSrc();
     }
@@ -42,8 +49,17 @@ class Image {
         $this->path = $parseUrl['path'] ?? false;
     }
 
-    protected function setPathFile() {
-        $this->pathFile = substr($this->path,0,1) != "/"  ?  $this->docRoot . $this->requestUri . $this->path  :  $this->docRoot . $this->path;
+    protected function setPathInfo() {
+        if ($this->getRemote()) {
+            $this->pathFile = $this->source;
+        } else {
+            $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
+        }
+        $pathInfo = pathinfo($this->path);
+        $this->dirname = $pathInfo['dirname'];
+        $this->basename = $pathInfo['basename'];
+        $this->extension = $pathInfo['extension'];
+        $this->filename = $pathInfo['filename'];
     }
 
     private function setRemote() {
@@ -87,35 +103,88 @@ class Image {
             $this->imageSize = getimagesize($filename);
             $this->ratio = round($this->imageSize[1] / $this->imageSize[0], 4);
         } else {
-            $this->imageSize[0] = 0;
-            $this->imageSize[1] = 0;
+            $this->width = 0;
+            $this->height = 0;
         }
     }
     protected function getValidate() {
         if($this->validate === null) $this->setValidate();
         return $this->validate;
     }
-    protected function getPathFile(): string {
+    protected function getPathFile() {
         return $this->pathFile;
     }
     public function getRemote(): bool {
         if ($this->remote === null) $this->setRemote();
         return $this->remote;
     }
-    public function getImageName(): string {
-        return basename($this->source,".".$this->getExtension());
+
+    /**
+     * @return mixed
+     */
+    public function getBasename(): string {
+        return $this->basename;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getDirname(): string {
+        return $this->dirname;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtension(): string {
+        return $this->extension;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename(): string {
+        return $this->filename;
+    }
+
+    /**
+     * @return array
+     */
     public function getImageSize(): array {
         return $this->imageSize;
     }
+
+    /**
+     * WIDTH
+     * @return mixed
+     */
     public function getWidth() {
         if (empty($this->imageSize)) $this->setSizes();
-        return $this->imageSize[0];
+        $this->width = $this->imageSize[0];
+        return $this->width;
     }
+
+    /**
+     * HEIGHT
+     * @return mixed
+     */
     public function getHeight() {
         if (empty($this->imageSize)) $this->setSizes();
-        return $this->imageSize[1];
+        $this->height = $this->imageSize[1];
+        return $this->height;
     }
+
+    /**
+     * RATIO
+     * @return float
+     */
+    public function getRatio(): float {
+        return $this->ratio;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getType() {
         if (empty($this->imageSize)) $this->setSizes();
         return $this->imageSize[2];
@@ -128,16 +197,10 @@ class Image {
         if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
     }
-    public function getRatio(): float {
-        return $this->ratio;
-    }
     public function getSource(): string {
         return $this->source;
     }
     public function getSrc(): string {
         return $this->src;
-    }
-    public function getExtension(): string {
-        return pathinfo($this->source)['extension'];
     }
 }
