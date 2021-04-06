@@ -32,7 +32,13 @@ class Thumbnail extends Image {
      * @param mixed $newHeight
      */
     private function setNewHeight($newHeight): void {
-        $this->newHeight = $newHeight && $newHeight !== (float) 0 ? floor($this->newWidth * $newHeight) : floor($this->newWidth * (parent::getHeight()/parent::getWidth()));
+        if ($newHeight) {
+            if ($newHeight !== (float) 0 && $newHeight < 1) {
+                $this->newHeight = floor($this->newWidth * $newHeight);
+            }
+        } else {
+            $this->newHeight = floor($this->newWidth * (parent::getHeight() / parent::getWidth()));
+        }
     }
 
     /**
@@ -100,7 +106,7 @@ class Thumbnail extends Image {
     private function sizesAndSrcset($attributes, $size) {
         $mediaQuery = "(min-width: ".$size."px) ".$size."px";
         $attributes['sizes'] = isset($attributes['sizes']) ? $attributes['sizes'].", ".$mediaQuery : $mediaQuery;
-        $srcset = $this->getThumbnail($size, floor($size*($this->newHeight/$this->newWidth)))." ".$size."w";
+        $srcset = $this->getThumbnail($size, $this->newWidth)." ".$size."w";
         $attributes['srcset'] = isset($attributes['srcset']) ? $attributes['srcset'].", ".$srcset : $srcset;
         return $attributes;
     }
