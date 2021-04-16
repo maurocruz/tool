@@ -52,24 +52,24 @@ class Image {
     protected function setPathInfo() {
         if ($this->getRemote()) {
             $this->pathFile = $this->source;
+        } elseif(is_uploaded_file($this->path)) {
+            $this->pathFile = $this->path;
         } else {
             $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
         }
         $pathInfo = pathinfo($this->path);
         $this->dirname = $pathInfo['dirname'];
         $this->basename = $pathInfo['basename'];
-        $this->extension = $pathInfo['extension'];
+        //$this->extension = $pathInfo['extension'] ?? null ;
         $this->filename = $pathInfo['filename'];
     }
 
     private function setRemote() {
-        $this->remote = $this->host ? $this->httpHost !== $this->host : false;
+        $this->remote = $this->host && $this->httpHost !== $this->host;
     }
 
-    private function setSrc($src = null) {
-        if ($src) {
-            $this->src = $src;
-        } elseif ($this->remote) {
+    private function setSrc() {
+        if ($this->remote) {
             $this->src = $this->source;
         } else {
             if (!$this->scheme) {
@@ -98,10 +98,12 @@ class Image {
 
     private function setSizes() {
         if ($this->validate === null) $this->setValidate();
-        $filename = $this->getPathFile();
-        if (file_exists($filename)) {
-            $this->imageSize = getimagesize($filename);
-            $this->ratio = round($this->imageSize[1] / $this->imageSize[0], 4);
+        if (file_exists($this->pathFile)) {
+            $this->imageSize = getimagesize($this->pathFile);
+            $this->width = $this->imageSize[0];
+            $this->height = $this->imageSize[1];
+            $this->extension = substr(strstr($this->imageSize['mime'],'/'),1);
+            $this->ratio = round($this->width / $this->height, 4);
         } else {
             $this->width = 0;
             $this->height = 0;
@@ -137,6 +139,7 @@ class Image {
      * @return string
      */
     public function getExtension(): string {
+        if (empty($this->imageSize)) $this->setSizes();
         return $this->extension;
     }
 
@@ -160,7 +163,6 @@ class Image {
      */
     public function getWidth() {
         if (empty($this->imageSize)) $this->setSizes();
-        $this->width = $this->imageSize[0];
         return $this->width;
     }
 
@@ -170,7 +172,6 @@ class Image {
      */
     public function getHeight() {
         if (empty($this->imageSize)) $this->setSizes();
-        $this->height = $this->imageSize[1];
         return $this->height;
     }
 
@@ -179,6 +180,7 @@ class Image {
      * @return float
      */
     public function getRatio(): float {
+        if (empty($this->imageSize)) $this->setSizes();
         return $this->ratio;
     }
 

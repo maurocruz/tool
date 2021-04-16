@@ -11,6 +11,7 @@ class Thumbnail extends Image {
     private $newRatio;
     private static $image_max_width;
     private $thumbSrc;
+    private $thumbPath;
 
     /**
      * Thumbnail constructor.
@@ -41,10 +42,15 @@ class Thumbnail extends Image {
         }
     }
 
+    private function setThumbPath($pathFile): void {
+        $pathinfo = pathinfo($pathFile);
+        $this->thumbPath = $_SERVER['DOCUMENT_ROOT'] . sprintf("%s/thumbs/%s(%sw%s).%s", $pathinfo['dirname'], $pathinfo['filename'], $this->newWidth, $this->newHeight, $this->getExtension());
+    }
+
     /**
      * @return mixed
      */
-    public function getThumbPath(): string {
+    private function getThumbPath(): string {
         return sprintf("%s/thumbs/%s(%sw%s).%s", parent::getDirname(), parent::getFilename(), $this->newWidth, $this->newHeight, parent::getExtension());
     }
 
@@ -176,44 +182,49 @@ class Thumbnail extends Image {
             $src_y = (imagesy($imageTemporary) - $this->newHeight) / 2;
             imagecopymerge($newImage, $imageTemporary, 0, 0, $src_x, $src_y, $this->newWidth, $this->newHeight, 100);
         }
-        // create dir thumbs 
-        $dirname = dirname($this->thumbFile());
+        // create dir thumbs
+        if (!$this->thumbPath) $this->setThumbPath($this->getSource());
+        $dirname = dirname($this->thumbPath);
         if (!is_dir($dirname)) {
             mkdir($dirname);
             chmod($dirname, 0777);
         }
         // save image
+        $response = null;
         switch (parent::getType()) {
             case '1': 
-                imagegif($newImage, $this->thumbFile());
+                $response = imagegif($newImage, $this->thumbPath);
                 break;
             case '2':
-                imagejpeg($newImage, $this->thumbFile());
+                $response = imagejpeg($newImage, $this->thumbPath);
                 break;
-            case '3': 
-                imagepng($newImage, $this->thumbFile());
+            case '3':
+                $response = imagepng($newImage, $this->thumbPath);
                 break;
         }
         imagedestroy($newImage);
         imagedestroy($imageTemporary);
+        return $response;
     }
-    
+
     /**
-     * Upload image. 
+     * Upload image.
      * If image uploaded is larger than $image_max_width, create thumbnail
-     * 
+     *
      * @param string $filename
+     * @return bool
      */
     public function uploadImage(string $filename) {
         $this->setNewMeasures(self::$image_max_width);
         if (parent::getWidth() > self::$image_max_width) {
-            $this->createThumbnail();
+            $this->setThumbPath($filename);
+            return $this->createThumbnail() ? $this : false;
         } else {
             $path = $_SERVER['DOCUMENT_ROOT'] . $filename;
             if(is_dir(dirname($path)) === false) {
                 $path = $this->makeDir($path);
             }
-            move_uploaded_file($this->getPathFile(), $path);
+            return move_uploaded_file($this->getPathFile(), $path);
         }
     }
 
