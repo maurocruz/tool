@@ -67,7 +67,8 @@ class Thumbnail extends Image {
      */
     private function setThumbSrc() {
         $parseUrl = parse_url(parent::getSrc());
-        $this->thumbSrc = $parseUrl['scheme'] . "://" . $parseUrl['host'] . $this->getThumbPath();
+        $thumbPath = substr($this->getThumbPath(),0,1) !== "/" ? $this->requestUri.$this->getThumbPath() : $this->getThumbPath();
+        $this->thumbSrc = $parseUrl['scheme'] . "://" . $parseUrl['host'] . $thumbPath;
     }
     
     private function setNewMeasures($newWidth, $newHeight = null) {

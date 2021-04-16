@@ -19,9 +19,9 @@ class Image {
     private $height;
     private $ratio;
     private $fileSize = null;
-    private $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    protected $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
     private $docRoot;
-    private $requestUri;
+    protected $requestUri;
     private $httpHost;
 
     public function __construct(string $source = null) {
@@ -73,7 +73,7 @@ class Image {
             $this->src = $this->source;
         } else {
             if (!$this->scheme) {
-                $protocol = filter_input(INPUT_SERVER, 'HTTPS') != 'off' ? "https" : "http";
+                $protocol = filter_input(INPUT_SERVER, 'HTTPS') && filter_input(INPUT_SERVER, 'HTTPS') != 'off' ? "https" : "http";
                 $this->src = str_replace($this->docRoot, $protocol . "://" . $this->httpHost, $this->pathFile);
             } else {
                 $this->src = $this->source;
