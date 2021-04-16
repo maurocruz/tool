@@ -21,7 +21,7 @@ class Image {
     private $fileSize = null;
     private $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
     private $docRoot;
-    private $requestUri;
+    protected $requestUri;
     private $httpHost;
 
     public function __construct(string $source = null) {
@@ -63,13 +63,11 @@ class Image {
     }
 
     private function setRemote() {
-        $this->remote = $this->host ? $this->httpHost !== $this->host : false;
+        $this->remote = $this->host && $this->httpHost !== $this->host;
     }
 
-    private function setSrc($src = null) {
-        if ($src) {
-            $this->src = $src;
-        } elseif ($this->remote) {
+    private function setSrc() {
+        if ($this->remote) {
             $this->src = $this->source;
         } else {
             if (!$this->scheme) {
