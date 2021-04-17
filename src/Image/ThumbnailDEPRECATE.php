@@ -1,9 +1,9 @@
 <?php
-namespace Plinct\Tool;
+namespace Plinct\Tool\Image;
 
 use function exif_read_data;
 
-class Thumbnail extends Image {
+class ThumbnailDEPRECATE {
     const IMAGE_MAX_SIZE = 1080;
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
     private $newWidth;
@@ -18,7 +18,7 @@ class Thumbnail extends Image {
      * @param string|null $src
      */
     public function __construct(string $src = null) {
-        parent::__construct($src);
+       // parent::__construct($src);
         self::$image_max_width = $GLOBALS['image_max_width'] ?? self::IMAGE_MAX_SIZE;
     }
 

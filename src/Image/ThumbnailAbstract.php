@@ -1,0 +1,127 @@
+<?php
+namespace Plinct\Tool\Image;
+
+class ThumbnailAbstract extends ImageAbstract {
+    const IMAGE_MAX_SIZE = 1080;
+    private $newWidth;
+    private $newHeight;
+    protected $newRatio;
+
+    private $imageTrueColor;
+    private $imageTemporary;
+
+    protected $thumbPath;
+    protected $thumbSrc;
+
+    protected function ThumbIfExists(): bool {
+        $this->setThumbPath();
+        if (file_exists($this->thumbPath)) return true;
+        return false;
+    }
+
+    public function setThumbPath(): void {
+        if (!$this->pathFile) $this->setPathInfo();
+        if (!$this->width) $this->setSizes();
+        $pathinfo = pathinfo($this->pathFile);
+        $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $this->extension;
+        $this->thumbPath = $pathinfo['dirname'] . $thumbFile;
+        $this->thumbSrc = $this->serverSchema . "://" . $this->serverHost . $this->dirname . $thumbFile;
+    }
+
+    protected function setNewSizes($newWidth, $newHeight) {
+        // NEW WIDTH
+        $this->newWidth = $newWidth > 1 ? $newWidth : self::IMAGE_MAX_SIZE * $newWidth;
+        // NEW HEIGHT
+        if (!$newHeight) {
+            $this->newHeight =  $this->newWidth / $this->ratio;
+        } else {
+            $this->newHeight = $newHeight > 1 && is_string($newHeight) ? $newHeight : $this->newWidth * $newHeight;
+        }
+        // NEW RATIO
+        $this->newRatio = (float) $this->newWidth / $this->newHeight;
+        // ADJUSTS IF NEW MEASURES > MEASURES
+        $this->newHeight = (int) floor($this->newHeight);
+        if ($this->newWidth > $this->width || $this->newHeight > $this->height) {
+            if($this->ratio > $this->newRatio) {
+                $this->newHeight = (int) $this->height;
+                $this->newWidth = (int) ($this->newHeight * $this->newRatio );
+            } else {
+                $this->newWidth = (int)  $this->width;
+                $this->newHeight = (int) ($this->newWidth / $this->newRatio);
+            }
+        }
+    }
+
+    protected function setTrueColorImage(int $width = null, int $height = null) {
+        $this->imageTrueColor = imagecreatetruecolor($width ?? $this->newWidth, $height ?? $this->newHeight);
+    }
+
+    protected function setTemporaryImage() {
+        switch ($this->type) {
+            case '1':
+                $this->imageTemporary = imagecreatefromgif($this->pathFile);
+                break;
+            case '2':
+                $this->imageTemporary = imagecreatefromjpeg($this->pathFile);
+                break;
+            case '3': // PNG
+                $this->imageTemporary = imagecreatefrompng($this->pathFile);
+                imagealphablending($this->imageTrueColor, false);
+                imagesavealpha($this->imageTrueColor, true);
+                break;
+        }
+    }
+
+    protected function copyResizedImage() {
+        $widthScale = 1;
+        if ($this->newRatio == $this->ratio) {
+            imagecopyresized($this->imageTrueColor, $this->imageTemporary, 0, 0, 0, 0, $this->newWidth, $this->newHeight, $this->width, $this->height);
+        } else {
+            // PAISAGEM
+            if ($this->newRatio > 1) {
+                $widthScale = $this->ratio < $this->newRatio ? $this->newWidth : ceil($this->newHeight * $this->ratio);
+            }
+            // RETRATO
+            elseif ($this->newRatio < 1) {
+                $widthScale = ceil($this->newHeight * $this->ratio);
+            }
+            // QUADRADO
+            elseif ($this->newRatio == 1) {
+                $widthScale = ceil($this->newWidth * $this->ratio);
+            }
+            $this->imageTemporary = imagescale($this->imageTemporary, $widthScale);
+            $src_x = (imagesx($this->imageTemporary) - $this->newWidth) / 2;
+            $src_y = (imagesy($this->imageTemporary) - $this->newHeight) / 2;
+            imagecopymerge($this->imageTrueColor, $this->imageTemporary, 0, 0, $src_x, $src_y, $this->newWidth, $this->newHeight, 100);
+        }
+        imagedestroy($this->imageTemporary);
+    }
+
+    protected function makeThumbDir () {
+        if (!file_exists($this->thumbPath)) {
+            $dirname = dirname($this->thumbPath);
+            if (!is_dir($dirname)) {
+                $oldumask = umask(0);
+                mkdir($dirname);
+                umask($oldumask);
+            }
+        }
+    }
+
+    protected function saveImage($destination = null) {
+        // MAKE DIR DESTINATIONS
+        $this->makeThumbDir();
+        switch ($this->type) {
+            case '1':
+                imagegif($this->imageTrueColor, $this->thumbPath);
+                break;
+            case '2':
+                imagejpeg($this->imageTrueColor, $this->thumbPath);
+                break;
+            case '3':
+                imagepng($this->imageTrueColor, $this->thumbPath);
+                break;
+        }
+        imagedestroy($this->imageTrueColor);
+    }
+}

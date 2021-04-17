@@ -1,6 +1,8 @@
 <?php
 namespace Plinct\Tool;
 
+use Plinct\Tool\Image\Image;
+
 class UploadFile {
 
     public function uploadImage($imagesUploaded, $destinationFolder): array {
@@ -21,17 +23,18 @@ class UploadFile {
                 $newName = $prefix . md5(StringTool::removeAccentsAndSpaces($filename)) . "." . $extension;
                 $destinationFile = $destinationFolder . $newName;
                 // IMAGE CLASS
+                $imageObject = new Image();
+                var_dump($imageObject);
+                //$image = (new Thumbnail($tmp_name))->uploadImage($destinationFile);
 
-                $image = (new Thumbnail($tmp_name))->uploadImage($destinationFile);
-
-                if (is_object($image)) {
+                /*if (is_object($image)) {
                     var_dump($image);
                     $response['status'] = "ok";
                     $response['data'][] = [
                         "contentUrl" => $image->getHeight(),
                         "height" => $image->getHeight()
                     ];
-                }
+                }*/
             }
         }
         return $response;
