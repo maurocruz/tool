@@ -2,29 +2,39 @@
 namespace Plinct\Tool\Image;
 
 use Plinct\Tool\Curl;
+use Plinct\Tool\FileSystem\FileSystem;
 
 abstract class ImageAbstract {
-    protected $src = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    // paths
+    const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    protected $src;
     protected $source;
     private $path;
     protected $pathFile;
+    protected $dirname;
+    private $basename;
+    private $filename;
+    protected $extension;
+    // measures
     protected $width;
     protected $height;
     protected $type;
     protected $ratio;
     protected $fileSize;
-    protected $dirname;
-    private $basename;
-    private $filename;
-    protected $extension;
+    protected $encodingFormat;
+    // state
     protected $remote;
     private $validate;
+    // server paths
     private $docRoot;
     private $requestUri;
     protected $serverHost;
     protected $serverSchema;
     private $sourceScheme;
     private $sourceHost;
+    // image transforms
+    protected $imageTrueColor;
+    protected $imageTemporary;
 
     protected function setServerRequests() {
         $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
@@ -47,6 +57,7 @@ abstract class ImageAbstract {
             $this->width = $imageSize[0];
             $this->height = $imageSize[1];
             $this->type = $imageSize[2];
+            $this->encodingFormat = $imageSize['mime'];
             $this->extension = substr(strstr($imageSize['mime'],'/'),1);
             $this->ratio = $this->width / $this->height;
             $this->fileSize = filesize($this->pathFile);
@@ -108,5 +119,47 @@ abstract class ImageAbstract {
     protected function getValidate() {
         if($this->validate === null) $this->setValidate();
         return $this->validate;
+    }
+
+    protected function setTrueColorImage(int $width = null, int $height = null) {
+        $this->imageTrueColor = imagecreatetruecolor($width ?? $this->newWidth, $height ?? $this->newHeight);
+    }
+
+    protected function setTemporaryImage() {
+        if (!$this->imageTrueColor) $this->setTrueColorImage();
+        switch ($this->type) {
+            case '1':
+                $this->imageTemporary = imagecreatefromgif($this->pathFile);
+                break;
+            case '2':
+                $this->imageTemporary = imagecreatefromjpeg($this->pathFile);
+                break;
+            case '3': // PNG
+                $this->imageTemporary = imagecreatefrompng($this->pathFile);
+                imagealphablending($this->imageTrueColor, false);
+                imagesavealpha($this->imageTrueColor, true);
+                break;
+        }
+    }
+
+    protected function saveToFile(string $destinationFile) {
+        FileSystem::makeDirectory(dirname($destinationFile), 0777, true);
+
+        $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
+        $pathfile = strpos($destinationFile, $docroot) !== false ? $destinationFile : $docroot . $destinationFile;
+
+        switch ($this->type) {
+            case '1':
+                imagegif($this->imageTrueColor, $pathfile);
+                break;
+            case '2':
+                imagejpeg($this->imageTrueColor, $pathfile);
+                break;
+            case '3':
+                imagepng($this->imageTrueColor, $pathfile);
+                break;
+        }
+        imagedestroy($this->imageTemporary);
+        imagedestroy($this->imageTrueColor);
     }
 }

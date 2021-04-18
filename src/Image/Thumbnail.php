@@ -3,7 +3,6 @@ namespace Plinct\Tool\Image;
 
 class Thumbnail extends ThumbnailAbstract {
 
-
     protected function getThumbnail($width, $height = null) {
         // SET NEW SIZES
         parent::setNewSizes($width,$height);
@@ -22,17 +21,19 @@ class Thumbnail extends ThumbnailAbstract {
     }
 
     private function createThumbnail() {
-        // CREATE IMAGE TRUE COLOR
-        parent::setTrueColorImage();
         // CREATE TEMPORARY IMAGE
         parent::setTemporaryImage();
         // COPY AND RESIZED
         parent::copyResizedImage();
-
     }
 
     public function getNewRatio() {
         return $this->newRatio;
     }
+
+    public function getThumbSrc() {
+        return $this->thumbSrc;
+    }
+
 
 }

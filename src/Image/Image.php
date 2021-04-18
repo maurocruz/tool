@@ -1,7 +1,7 @@
 <?php
 namespace Plinct\Tool\Image;
 
-class Image extends Thumbnail {
+class Image extends Thumbnail implements ImageTransformInterface {
 
     /**
      * Image constructor.
@@ -9,6 +9,17 @@ class Image extends Thumbnail {
      */
     public function __construct(string $source = null) {
         $this->source = $source ?? $this->src;
+    }
+    public function resize($width, $height = null): ImageTransformInterface {
+        if (!$this->width) parent::setSizes();
+        parent::setNewSizes($width, $height);
+        parent::setTemporaryImage();
+        imagecopyresized($this->imageTrueColor, $this->imageTemporary, 0, 0, 0, 0, $this->newWidth, $this->newHeight, $this->width, $this->height);
+        return $this;
+    }
+
+    public function saveToFile(string $destinationFile) {
+        parent::saveToFile($destinationFile);
     }
 
     /**
@@ -21,6 +32,11 @@ class Image extends Thumbnail {
         return parent::getThumbnail($width, $height);
     }
 
+    public function uploadImage($destinationFile) {
+            $this->setSizes();
+            var_dump($this);
+            var_dump($destinationFile);
+    }
     /**
      * @return bool
      */
@@ -46,7 +62,6 @@ class Image extends Thumbnail {
         if (!$this->height) $this->setSizes();
         return $this->height;
     }
-
     public function getFileSize(): ?int {
         if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
@@ -55,6 +70,11 @@ class Image extends Thumbnail {
         return $this->source;
     }
     public function getSrc(): string {
+        if (!$this->src) $this->setSrc();
         return $this->src;
+    }
+
+    public function getEncodingFormat(){
+        return $this->encodingFormat;
     }
 }

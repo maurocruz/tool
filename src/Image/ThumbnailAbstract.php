@@ -3,12 +3,10 @@ namespace Plinct\Tool\Image;
 
 class ThumbnailAbstract extends ImageAbstract {
     const IMAGE_MAX_SIZE = 1080;
-    private $newWidth;
-    private $newHeight;
+    protected $newWidth;
+    protected $newHeight;
     protected $newRatio;
 
-    private $imageTrueColor;
-    private $imageTemporary;
 
     protected $thumbPath;
     protected $thumbSrc;
@@ -49,26 +47,6 @@ class ThumbnailAbstract extends ImageAbstract {
                 $this->newWidth = (int)  $this->width;
                 $this->newHeight = (int) ($this->newWidth / $this->newRatio);
             }
-        }
-    }
-
-    protected function setTrueColorImage(int $width = null, int $height = null) {
-        $this->imageTrueColor = imagecreatetruecolor($width ?? $this->newWidth, $height ?? $this->newHeight);
-    }
-
-    protected function setTemporaryImage() {
-        switch ($this->type) {
-            case '1':
-                $this->imageTemporary = imagecreatefromgif($this->pathFile);
-                break;
-            case '2':
-                $this->imageTemporary = imagecreatefromjpeg($this->pathFile);
-                break;
-            case '3': // PNG
-                $this->imageTemporary = imagecreatefrompng($this->pathFile);
-                imagealphablending($this->imageTrueColor, false);
-                imagesavealpha($this->imageTrueColor, true);
-                break;
         }
     }
 
