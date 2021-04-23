@@ -95,7 +95,7 @@ class Curl {
         if ($exec === false) {
             $response = curl_error($handle);
         } else {
-            $response = $exec;
+            $response = $exec == '' ? true : $exec;
         }
         curl_close($handle);
         return $response;
