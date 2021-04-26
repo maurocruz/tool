@@ -12,8 +12,6 @@ abstract class ImageAbstract {
     private $path;
     protected $pathFile;
     protected $dirname;
-    private $basename;
-    private $filename;
     protected $extension;
     // measures
     protected $width;
@@ -27,7 +25,7 @@ abstract class ImageAbstract {
     private $validate;
     // server paths
     private $docRoot;
-    private $requestUri;
+    protected $requestUri;
     protected $serverHost;
     protected $serverSchema;
     private $sourceScheme;
@@ -96,8 +94,6 @@ abstract class ImageAbstract {
         }
         $pathInfo = pathinfo($this->path);
         $this->dirname = $pathInfo['dirname'];
-        $this->basename = $pathInfo['basename'];
-        $this->filename = $pathInfo['filename'];
     }
 
     protected function setRemote() {

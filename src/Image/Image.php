@@ -8,7 +8,11 @@ class Image extends Thumbnail implements ImageTransformInterface {
      * @param string|null $source
      */
     public function __construct(string $source = null) {
-        $this->source = $source ?? $this->src;
+        $this->setServerRequests();
+        // DIRECTORY IMAGE
+        $posLastSeparator = strrpos($this->requestUri, "/");
+        $requestUri = substr($this->requestUri, 0, ($posLastSeparator + 1));
+        $this->source = (substr($source,0,1) != "/" ? $requestUri . $source : $source) ?? $this->src;
     }
     public function resize($width, $height = null): ImageTransformInterface {
         if (!$this->width) parent::setSizes();
