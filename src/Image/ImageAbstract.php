@@ -59,9 +59,6 @@ abstract class ImageAbstract {
             $this->extension = substr(strstr($imageSize['mime'],'/'),1);
             $this->ratio = $this->width / $this->height;
             $this->fileSize = filesize($this->pathFile);
-        } else {
-            $this->width = 0;
-            $this->height = 0;
         }
     }
 
@@ -74,7 +71,12 @@ abstract class ImageAbstract {
             $data = (new Curl($this->source))->getImageData();
             $this->validate = $data['validate'];
             $this->fileSize = $data['fileSize'];
-            //$imageSize = $data['imageSize'];
+            $imageSize = $data['imageSize'];
+            $this->width = $imageSize[0];
+            $this->height = $imageSize[1];
+            $this->ratio = $this->width / $this->height;
+            $this->extension = $imageSize[2];
+            $this->encodingFormat = $imageSize['mime'];
         } elseif (is_file($filename) && is_readable($filename) && strstr(mime_content_type($filename), "/", true) == "image") {
             $this->validate = true;
         }
@@ -97,7 +99,8 @@ abstract class ImageAbstract {
     }
 
     protected function setRemote() {
-        $this->remote = $this->sourceHost && $this->serverHost !== $this->sourceHost;
+        if (!$this->sourceHost) $this->setParseUrl();
+        $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
     }
 
     protected function setSrc() {

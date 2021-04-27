@@ -12,7 +12,7 @@ class Image extends Thumbnail implements ImageTransformInterface {
         // DIRECTORY IMAGE
         $posLastSeparator = strrpos($this->requestUri, "/");
         $requestUri = substr($this->requestUri, 0, ($posLastSeparator + 1));
-        $this->source = (substr($source,0,1) != "/" ? $requestUri . $source : $source) ?? $this->src;
+        $this->source = (substr($source,0,1) != "/" && substr($source,0,4) != "http" ? $requestUri . $source : $source) ?? $this->src;
     }
     public function resize($width, $height = null): ImageTransformInterface {
         if (!$this->width) parent::setSizes();
