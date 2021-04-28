@@ -8,6 +8,9 @@ class Thumbnail extends ThumbnailAbstract {
         parent::setNewSizes($width,$height);
         // FILE THUMBS IF EXISTS
         if (parent::ThumbIfExists()) return $this->thumbSrc;
+        // IF REMOTE FILE
+        $this->setSrc();
+        if($this->remote) return $this->src;
         // SAVE THUMBNAIL
         $this->saveThumbnail();
         return $this->thumbSrc;

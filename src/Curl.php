@@ -124,4 +124,20 @@ class Curl {
         curl_close($handle);
         return $array;
     }
+
+    public static function remote_file_exists($filename): bool {
+        // Initialize cURL
+        $ch = curl_init($filename);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_exec($ch);
+        $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        // Check the response code
+        if($responseCode == 200){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

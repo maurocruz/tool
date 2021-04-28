@@ -1,6 +1,8 @@
 <?php
 namespace Plinct\Tool\Image;
 
+use Plinct\Tool\Curl;
+
 class ThumbnailAbstract extends ImageAbstract {
     const IMAGE_MAX_SIZE = 1080;
     protected $newWidth;
@@ -13,7 +15,16 @@ class ThumbnailAbstract extends ImageAbstract {
 
     protected function ThumbIfExists(): bool {
         $this->setThumbPath();
-        if (file_exists($this->thumbPath)) return true;
+        // REMOTE FILE
+        if ($this->remote) {
+            $this->thumbSrc = $this->thumbPath;
+            return Curl::remote_file_exists($this->thumbPath);
+        }
+        // LOCAL FILE
+        if (file_exists($this->thumbPath)) {
+            return true;
+        }
+        // RETURN
         return false;
     }
 
