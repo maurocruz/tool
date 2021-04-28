@@ -88,8 +88,8 @@ class Curl {
         // PARAMS
         if ($params) curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
         // disable for production
-        curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($handle, CURLOPT_PROXY_SSL_VERIFYPEER, false);
+        //curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
+        //curl_setopt($handle, CURLOPT_PROXY_SSL_VERIFYPEER, false);
         // EXECUTE
         $exec = curl_exec($handle);
         if ($exec === false) {
