@@ -6,7 +6,10 @@ class Locale {
      * @return string
      */
     public static function getServerLanguage(): string {
-        return (new \Locale())->acceptFromHttp(filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'));
+        if (filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE')) {
+            return (new \Locale())->acceptFromHttp(filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'));
+        }
+        return false;
     }
 
     public static function translateByGettext($language, $name, $directory) {
