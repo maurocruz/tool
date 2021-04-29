@@ -63,7 +63,7 @@ abstract class ImageAbstract {
     }
 
 
-    protected function setValidate(): bool {
+    protected function setValidate() {
         if (!$this->remote) $this->setRemote();
         if (!$this->pathFile) $this->setPathInfo();
         $filename = $this->pathFile;
@@ -80,7 +80,7 @@ abstract class ImageAbstract {
         } elseif (is_file($filename) && is_readable($filename) && strstr(mime_content_type($filename), "/", true) == "image") {
             $this->validate = true;
         }
-        return false;
+        $this->validate = false;
     }
 
     protected function setPathInfo() {
