@@ -24,12 +24,12 @@ abstract class ImageAbstract {
     protected $remote;
     private $validate;
     // server paths
-    private $docRoot;
+    protected $docRoot;
     protected $requestUri;
     protected $serverHost;
     protected $serverSchema;
-    private $sourceScheme;
-    private $sourceHost;
+    protected $sourceScheme;
+    protected $sourceHost;
     // image transforms
     protected $imageTrueColor;
     protected $imageTemporary;
@@ -50,23 +50,23 @@ abstract class ImageAbstract {
 
     protected function setSizes() {
         if (!$this->validate) $this->setValidate();
-        if (file_exists($this->pathFile)) {
+        if ($this->validate === false) {
+           $this->source = self::NO_IMAGE;
+           $this->setRemote();
+           $this->setSizesForRemote();
+        } elseif($this->remote === false) {
             $imageSize = getimagesize($this->pathFile);
             $this->width = $imageSize[0];
             $this->height = $imageSize[1];
             $this->type = $imageSize[2];
             $this->encodingFormat = $imageSize['mime'];
-            $this->extension = substr(strstr($imageSize['mime'],'/'),1);
+            $this->extension = substr(strstr($imageSize['mime'], '/'), 1);
             $this->ratio = $this->width / $this->height;
             $this->fileSize = filesize($this->pathFile);
         }
     }
 
-
-    protected function setValidate() {
-        if (!$this->remote) $this->setRemote();
-        if (!$this->pathFile) $this->setPathInfo();
-        $filename = $this->pathFile;
+    protected function setSizesForRemote() {
         if ($this->remote) {
             $data = (new Curl($this->source))->getImageData();
             $this->validate = $data['validate'];
@@ -77,10 +77,32 @@ abstract class ImageAbstract {
             $this->ratio = $this->width / $this->height;
             $this->extension = $imageSize[2];
             $this->encodingFormat = $imageSize['mime'];
-        } elseif (is_file($filename) && is_readable($filename) && strstr(mime_content_type($filename), "/", true) == "image") {
-            $this->validate = true;
         }
-        $this->validate = false;
+    }
+
+    protected function setValidate() {
+        if (!$this->remote) $this->setRemote();
+        if (!$this->pathFile) $this->setPathInfo();
+        if ($this->remote) {
+            $data = (new Curl($this->source))->getImageData();
+            if ($data !== false) {
+                $this->validate = $data['validate'];
+                $this->fileSize = $data['fileSize'];
+                $imageSize = $data['imageSize'];
+                $this->width = $imageSize[0];
+                $this->height = $imageSize[1];
+                $this->ratio = $this->width / $this->height;
+                $this->extension = $imageSize[2];
+                $this->encodingFormat = $imageSize['mime'];
+            } else {
+                $this->validate = false;
+            }
+        } elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
+            $this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
+        } else {
+            $this->src = self::NO_IMAGE;
+            $this->validate = false;
+        }
     }
 
     protected function setPathInfo() {
@@ -104,13 +126,16 @@ abstract class ImageAbstract {
     }
 
     protected function setSrc() {
+        if ($this->remote === null) $this->setRemote();
+        if ($this->validate === null) $this->setValidate();
         if ($this->remote) {
+            if ($this->validate === false) {
+               $this->source = self::NO_IMAGE;
+            }
             $this->src = $this->source;
         } else {
-            if (!$this->sourceScheme) {
+            if (!$this->sourceScheme && $this->validate) {
                 $this->src = str_replace($this->docRoot, $this->serverSchema . "://" . $this->serverHost, $this->pathFile);
-            } else {
-                $this->src = $this->source;
             }
         }
     }

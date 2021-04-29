@@ -17,7 +17,6 @@ class ThumbnailAbstract extends ImageAbstract {
         $this->setThumbPath();
         // REMOTE FILE
         if ($this->remote) {
-            $this->thumbSrc = $this->thumbPath;
             return Curl::remote_file_exists($this->thumbPath);
         }
         // LOCAL FILE
@@ -29,12 +28,17 @@ class ThumbnailAbstract extends ImageAbstract {
     }
 
     public function setThumbPath(): void {
-        if (!$this->pathFile) $this->setPathInfo();
-        if (!$this->width) $this->setSizes();
-        $pathinfo = pathinfo($this->pathFile);
-        $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $this->extension;
-        $this->thumbPath = $pathinfo['dirname'] . $thumbFile;
-        $this->thumbSrc = $this->serverSchema . "://" . $this->serverHost . $this->dirname . $thumbFile;
+        $pathinfo = pathinfo($this->source);
+        $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $pathinfo['extension'];
+        if ($this->remote) {
+            $this->thumbPath = $pathinfo['dirname'] . $thumbFile;
+            $this->thumbSrc = $this->thumbPath;
+        } else {
+            if (!$this->pathFile) $this->setPathInfo();
+            if (!$this->width) $this->setSizes();
+            $this->thumbPath = $this->docRoot . $pathinfo['dirname'] . $thumbFile;
+            $this->thumbSrc = $this->serverSchema . "://" . $this->serverHost . $this->dirname . $thumbFile;
+        }
     }
 
     protected function setNewSizes($newWidth, $newHeight) {
