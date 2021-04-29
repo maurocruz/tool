@@ -4,6 +4,10 @@ namespace Plinct\Tool\Image;
 class Thumbnail extends ThumbnailAbstract {
 
     protected function getThumbnail($width, $height = null) {
+        if ($this->getValidate() === false) {
+            $this->source = self::NO_IMAGE;
+            $width = 200;
+        }
         // SET NEW SIZES
         parent::setNewSizes($width,$height);
         // FILE THUMBS IF EXISTS
