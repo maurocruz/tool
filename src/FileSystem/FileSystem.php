@@ -25,13 +25,15 @@ class FileSystem {
 
     public static function listDirectories(string $directory) {
         $response = false;
-        self::setPathfile($directory);
-        if (is_dir(self::$PATHFILE)) {
+        $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
+        if (substr($directory,-1) !== "/") $directory .= "/";
+        $directoryPath =  $docroot . $directory;
+        if (is_dir($directoryPath)) {
             $response[] = $directory;
-            foreach (scandir(self::$PATHFILE) as $file) {
+            foreach (scandir($directoryPath) as $file) {
                 if (!in_array($file, array(".", "..", "thumbs"))) {
-                    if (is_dir(self::$PATHFILE . $file)) {
-                        $subdir = self::listDirectories($directory . $file . DIRECTORY_SEPARATOR);
+                    if (is_dir($directoryPath . $file)) {
+                        $subdir = self::listDirectories(str_replace($docroot,"",$directoryPath.$file));
                         if ($subdir != false) {
                             $response = array_merge($response,$subdir);
                         }
@@ -41,5 +43,4 @@ class FileSystem {
         }
         return $response;
     }
-
 }
