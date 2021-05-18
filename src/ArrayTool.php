@@ -7,7 +7,7 @@ class ArrayTool {
         if ($array) {
             foreach ($array as $value) {
                 if (array_search($valueName, $value)) {
-                    return $value;
+                    return $propertyName ? $value[$propertyName] : $value;
                 }
             }
         }
