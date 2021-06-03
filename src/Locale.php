@@ -15,7 +15,8 @@ class Locale {
     public static function translateByGettext($language, $name, $directory) {
         putenv("LC_ALL=$language");
         setlocale(LC_ALL, $language.".utf8");
-        bindtextdomain($name, $directory);
+        $bind = bindtextdomain($name, $directory);
         textdomain($name);
+        return $bind;
     }
 }
