@@ -14,6 +14,12 @@ class Image extends Thumbnail implements ImageTransformInterface {
         $requestUri = substr($this->requestUri, 0, ($posLastSeparator + 1));
         $this->source = (substr($source,0,1) != "/" && substr($source,0,4) != "http" ? $requestUri . $source : $source) ?? $this->src;
     }
+
+    /**
+     * @param $width
+     * @param null $height
+     * @return ImageTransformInterface
+     */
     public function resize($width, $height = null): ImageTransformInterface {
         if (!$this->width) parent::setSizes();
         parent::setNewSizes($width, $height);
@@ -36,11 +42,6 @@ class Image extends Thumbnail implements ImageTransformInterface {
         return parent::getThumbnail($width, $height);
     }
 
-    public function uploadImage($destinationFile) {
-            $this->setSizes();
-            var_dump($this);
-            var_dump($destinationFile);
-    }
     /**
      * @return bool
      */
