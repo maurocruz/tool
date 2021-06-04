@@ -8,8 +8,6 @@ class ThumbnailAbstract extends ImageAbstract {
     protected $newWidth;
     protected $newHeight;
     protected $newRatio;
-
-
     protected $thumbPath;
     protected $thumbSrc;
 
@@ -101,7 +99,7 @@ class ThumbnailAbstract extends ImageAbstract {
         }
     }
 
-    protected function saveImage($destination = null) {
+    protected function saveImage() {
         // MAKE DIR DESTINATIONS
         $this->makeThumbDir();
         switch ($this->type) {
