@@ -22,7 +22,7 @@ abstract class ImageAbstract {
     protected $encodingFormat;
     // state
     protected $remote;
-    private $validate;
+    protected $validate;
     // server paths
     protected $docRoot;
     protected $requestUri;
