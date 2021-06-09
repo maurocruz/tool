@@ -22,7 +22,7 @@ abstract class ImageAbstract {
     protected $encodingFormat;
     // state
     protected $remote;
-    private $validate;
+    protected $validate;
     // server paths
     protected $docRoot;
     protected $requestUri;
@@ -136,6 +136,8 @@ abstract class ImageAbstract {
         } else {
             if (!$this->sourceScheme && $this->validate) {
                 $this->src = str_replace($this->docRoot, $this->serverSchema . "://" . $this->serverHost, $this->pathFile);
+            } else {
+                $this->src = $this->source;
             }
         }
     }

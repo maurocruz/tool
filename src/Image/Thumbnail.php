@@ -14,7 +14,7 @@ class Thumbnail extends ThumbnailAbstract {
         if (parent::ThumbIfExists()) return $this->thumbSrc;
         // IF REMOTE FILE
         $this->setSrc();
-        if($this->remote) return $this->src;
+        if($this->remote || !$this->validate) return $this->src;
         // SAVE THUMBNAIL
         $this->saveThumbnail();
         return $this->thumbSrc;

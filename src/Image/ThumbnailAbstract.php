@@ -8,8 +8,6 @@ class ThumbnailAbstract extends ImageAbstract {
     protected $newWidth;
     protected $newHeight;
     protected $newRatio;
-
-
     protected $thumbPath;
     protected $thumbSrc;
 
@@ -36,7 +34,7 @@ class ThumbnailAbstract extends ImageAbstract {
         } else {
             if (!$this->pathFile) $this->setPathInfo();
             if (!$this->width) $this->setSizes();
-            $this->thumbPath = $this->docRoot . $pathinfo['dirname'] . $thumbFile;
+            $this->thumbPath = $this->docRoot . str_replace($this->sourceScheme."://".$this->sourceHost,"",$pathinfo['dirname']) . $thumbFile;
             $this->thumbSrc = $this->serverSchema . "://" . $this->serverHost . $this->dirname . $thumbFile;
         }
     }
@@ -101,7 +99,7 @@ class ThumbnailAbstract extends ImageAbstract {
         }
     }
 
-    protected function saveImage($destination = null) {
+    protected function saveImage() {
         // MAKE DIR DESTINATIONS
         $this->makeThumbDir();
         switch ($this->type) {
