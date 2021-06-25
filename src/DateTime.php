@@ -1,11 +1,9 @@
 <?php
-
 namespace Plinct\Tool;
 
 use Exception;
 
-class DateTime
-{
+class DateTime {
     public $year;
     public $month;
     public $day;
@@ -17,7 +15,12 @@ class DateTime
     public $literalMonthAbrev;
     public $literalWeekDay;
     public $literalWeekDayAbrev;
-    
+
+    /**
+     * DateTime constructor.
+     * @param $date
+     * @param null $object
+     */
     public function __construct($date, $object = NULL) {
         try {
             $datetime = new \DateTime($date, $object);
@@ -36,7 +39,11 @@ class DateTime
         }
     }
 
-    public static function formatISO8601(string $dateTime, int $timeZone = 0): string {
+    /**
+     * @param string $dateTime
+     * @return string
+     */
+    public static function formatISO8601(string $dateTime): string {
         try {
             $dt = new \DateTime($dateTime);
             return $dt->format('Y-m-d\TH:i:s') ."-03:00";
@@ -44,76 +51,82 @@ class DateTime
             return $dateTime;
         }
     }
-    
-    // RETORNA UM PERÍODO DE datainicio A datafim
-    static function formatDate($start = null, $end = null, $mode = 'NUMERAL') 
-    {
+
+    /**
+     * RETORNA UM PERÍODO DE datainicio A datafim
+     * @param null $start
+     * @param null $end
+     * @param string $mode
+     * @return false|string
+     */
+    static function formatDate($start = null, $end = null, string $mode = 'NUMERAL') {
         if ($start === false) {
             return "Data inválida!";
         }
-
         try {
             $inicio = new \DateTime($start);
             $fim = $end != null ? new \DateTime($end) : null;
         } catch (Exception $e) {
+            return false;
         }
-
         // calculando a diferença
         $interval = $fim ? $inicio->diff($fim) : null;
         $connective = $interval && $interval->format('%a') > 1 ? 'a' : 'e';
-        
         // se houver fim e forem no mesmo mês
         if($end && $fim!=$inicio && date_format($inicio, 'n') == date_format($fim, 'n')):            
             return $mode == 'TEXTUAL' ? date_format($inicio, 'd').' '.$connective.' '.date_format($fim, 'd').' de '.self::translateMonth(date_format($fim, 'n')).' de '.date_format($fim, 'Y') : date_format($inicio, 'd').'  '.$connective.'  '. date_format($fim, 'd/m/Y');
-          
         // se houver fim e NÃO forem no mesmo mês
         elseif($end && $fim!=$inicio && date_format($inicio, 'n') != date_format($fim, 'n')):
             return $mode == 'TEXTUAL' ? date_format($inicio,'d').' de '.self::translateMonth(date_format($inicio, 'n')).'  '.$connective.'  '.date_format($fim, 'd').' de '.self::translateMonth(date_format($fim, 'n')).' de '.date_format($fim, 'Y') : date_format($inicio,"d/m/Y").'  '.$connective.'  '.date_format($fim, "d/m/Y");
-        
         // se não houver fim
         else:
             return $mode == 'TEXTUAL' ? date_format($inicio,'d').' de '.self::translateMonth(date_format($inicio, 'n')).' de '.date_format($inicio, 'Y') : date_format($inicio,"d/m/Y");
-        
         endif;
     }
-    
+
+    /**
+     * @param $date
+     * @return false|string
+     */
     static function formatDateTime($date) {
         try {
             $data = new \DateTime($date);
         } catch (Exception $e) {
+            return false;
         }
         return date_format($data, "d/m/Y \à\s H\:i\:s");
-    }  
-    
-   /*public function getDataUser($id,$field){
-        $db = new UsersModel();
-        $where = "id='{$id}'";
-        $dados_user = $db->selectUser($where);
-        if(empty($dados_user)){
-            return "Anônimo";
-        }else{
-            return $dados_user[0][$field];
-        }
-    }*/
-        
-    // RETORNA HORAS NO FORMATO BRASILEIRO
-    /*static function formatBrazilianTime($time){
-        $hour = substr($time, 0, 2);
-        $minutes = substr($time, 3, 2);
-        $seconds = substr($time, 6, 2);
-        if($seconds == '00'){
-            return $hour.'h'.$minutes;
-        }else{
-            return $hour.'h'.$minutes.'min'.$seconds;
-        }
-    }*/
+    }
 
-    // RETORNA DATA COMO TEXTO
-    public static function getTextualDate($date = NULL, $weekday = NULL): string
-    {
+    /**
+     * @param $date
+     * @return false|string
+     */
+    public static function formateCompleteDateTimeUTC($date) {
+        $parse = date_parse_from_format("Y-m-d H:i:s", $date);
+        return date("c", mktime($parse['hour'], $parse['minute'], $parse['second'], $parse['month'], $parse['day'], $parse['year']));
+    }
+
+    /**
+     * @param $time
+     * @return false|string
+     */
+    public static function formatTime($time)  {
+        $replace = str_replace(":", "%s", $time);
+        $string = sprintf($replace, "h", "min");
+        return substr($string, 0, -5);
+    }
+
+    /**
+     * RETORNA DATA COMO TEXTO
+     * @param null $date
+     * @param null $weekday
+     * @return string
+     */
+    public static function getTextualDate($date = NULL, $weekday = NULL): string {
         try {
             $data = $date ? new \DateTime($date) : new \DateTime();
         } catch (Exception $e) {
+            return false;
         }
         // weekday
         $week = $weekday ? self::translateWeekday(date_format($data, 'N')).', ' : NULL;
@@ -124,7 +137,12 @@ class DateTime
         // return
         return $week.$day." de ".$month." de ".$year;
     }
-    
+
+    /**
+     * @param $weekday
+     * @param null $abrev
+     * @return string|null
+     */
     public static function translateWeekday($weekday, $abrev = NULL): ?string {
         if ($abrev) {
             switch ($weekday) { 
@@ -150,6 +168,10 @@ class DateTime
         return null;
     }
 
+    /**
+     * @param $month
+     * @return string|null
+     */
     public static function translateMonth($month): ?string {
         switch ($month) { 
             case "1": return "janeiro"; 
@@ -168,15 +190,16 @@ class DateTime
         return null;
     }
 
-    public static function formateCompleteDateTimeUTC($date) {
-        $parse = date_parse_from_format("Y-m-d H:i:s", $date);
-        return date("c", mktime($parse['hour'], $parse['minute'], $parse['second'], $parse['month'], $parse['day'], $parse['year']));
-    }
-    
-    public static function formatTime($time)  {
-        $replace = str_replace(":", "%s", $time);
-        $string = sprintf($replace, "h", "min");
-        return substr($string, 0, -5);
+    /**
+     * @throws Exception
+     */
+    public static function timeDiff($timeStart, $timeEnd, $unity = 'hour') {
+        $start = strtotime($timeStart);
+        $end = strtotime($timeEnd);
+        $secs = $end - $start;
+        $mins = $secs / 60;
+        $hours = $mins / 60;
+        return $unity == 'sec' ? $secs : ($unity == 'min' ? $mins : $hours);
     }
 }
 
