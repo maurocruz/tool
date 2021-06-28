@@ -34,13 +34,19 @@ class ArrayTool {
      */
     public static function sortByName(array $array, string $name, string $ordering = 'asc'): array {
         usort($array, function($a, $b) use ($name, $ordering) {
+            $propertyA = $a[$name];
+            $propertyB = $b[$name];
+            //
+            if($propertyA == $propertyB) {
+                return 0;
+            }
+            // DESC
             $direction = strtolower(trim($ordering));
             if($direction == 'desc') {
-                if ($a[$name] < $b[$name]) return 1;
-            } else {
-                if ($a[$name] > $b[$name]) return 1;
+                return ($propertyA > $propertyB) ? -1 : 1;
             }
-            return true;
+            // ASC
+            return ($propertyA < $propertyB) ? -1 : 1;
         });
         return $array;
     }
