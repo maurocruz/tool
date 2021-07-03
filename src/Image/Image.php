@@ -78,6 +78,14 @@ class Image extends Thumbnail implements ImageTransformInterface {
         if (!$this->src) $this->setSrc();
         return $this->src;
     }
+    public function getNewHeight(): int {
+        if (!$this->newHeight) parent::setSizes();
+        return $this->newHeight;
+    }
+    public function getNewWidth(): int {
+        if (!$this->newWidth) parent::setSizes();
+        return $this->newWidth;
+    }
 
     public function getEncodingFormat(){
         return $this->encodingFormat;
