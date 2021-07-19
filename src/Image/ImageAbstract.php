@@ -84,19 +84,7 @@ abstract class ImageAbstract {
         if (!$this->remote) $this->setRemote();
         if (!$this->pathFile) $this->setPathInfo();
         if ($this->remote) {
-            $data = (new Curl($this->source))->getImageData();
-            if ($data !== false) {
-                $this->validate = $data['validate'];
-                $this->fileSize = $data['fileSize'];
-                $imageSize = $data['imageSize'];
-                $this->width = $imageSize[0];
-                $this->height = $imageSize[1];
-                $this->ratio = $this->width / $this->height;
-                $this->extension = $imageSize[2];
-                $this->encodingFormat = $imageSize['mime'];
-            } else {
-                $this->validate = false;
-            }
+            $this->setSizesForRemote();
         } elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
             $this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
         } else {
