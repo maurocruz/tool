@@ -30,4 +30,20 @@ class StringTool
         }
         return null;
     }
+
+    public static function removeDuplicateQueryStrings($name = null): string {
+        $url = strstr($_SERVER['REQUEST_URI'],"?",true);
+        $queryString = $_SERVER['QUERY_STRING'];
+        $queryStringArray = explode("&", $queryString);
+        foreach ($queryStringArray as $value) {
+            $queryArray = explode("=",$value);
+            $newArray[$queryArray[0]] = $queryArray[1];
+        }
+        foreach ($newArray as $key=>$value2) {
+            if ($name != $key) {
+                $response[] = "$key=$value2";
+            }
+        }
+        return $url.'?'.implode("&",$response);
+    }
 }

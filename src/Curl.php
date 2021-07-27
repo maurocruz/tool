@@ -88,7 +88,7 @@ class Curl {
         // PARAMS
         if ($params) curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
         // disable for production
-        if ($_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+        if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") {
             curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
         }
         // EXECUTE
