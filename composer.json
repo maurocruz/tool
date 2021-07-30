@@ -1,7 +1,7 @@
 {
     "name": "plinct/tool",
     "description": "Tools for Plinct app",
-    "license": "MIT",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Mauro Cruz",
@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": "^7.3"
+        "php": "^7.2|^8.0"
     },
     "require-dev": {
         "ext-dom": "*",
