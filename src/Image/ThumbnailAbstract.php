@@ -7,9 +7,9 @@ class ThumbnailAbstract extends ImageAbstract {
     const IMAGE_MAX_SIZE = 1080;
     protected $newWidth;
     protected $newHeight;
-    protected $newRatio;
-    protected $thumbPath;
-    protected $thumbSrc;
+    protected float $newRatio;
+    protected string $thumbPath;
+    protected string $thumbSrc;
 
     protected function ThumbIfExists(): bool {
         $this->setThumbPath();
@@ -78,7 +78,7 @@ class ThumbnailAbstract extends ImageAbstract {
             }
             // QUADRADO
             elseif ($this->newRatio == 1) {
-                $widthScale = ceil($this->newWidth * $this->ratio);
+                $widthScale = $this->ratio > 1 ? ceil($this->newWidth * $this->ratio) : $this->newWidth;
             }
             $this->imageTemporary = imagescale($this->imageTemporary, $widthScale);
             $src_x = (imagesx($this->imageTemporary) - $this->newWidth) / 2;
