@@ -1,6 +1,9 @@
 <?php
 namespace Plinct\Tool;
 
+use Exception;
+use SimpleXMLElement;
+
 /**
  * Class Curl
  * @package Plinct\Tool
@@ -103,33 +106,58 @@ class Curl {
     }
 
     /**
-     * @return array
+     * @return array|false
+     * @throws Exception
      */
-    public function getImageData() {
-        $response = false;
+    public function getImageData(): array {
+        $validate = false;
+        $type = null;
+        $width = null;
+        $height = null;
+        $response = [];
+
         // HANDLE
         $handle = curl_init($this->basePath);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         $data = curl_exec($handle);
         // CHECK IF RESPONSE IS 200
         $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+        $contentType = curl_getinfo($handle, CURLINFO_CONTENT_TYPE);
+        $fileSize = curl_getinfo($handle, CURLINFO_SIZE_DOWNLOAD);
+
         if ($responseCode == 200) {
-            $contentType = curl_getinfo($handle, CURLINFO_CONTENT_TYPE);
-            $type = substr(strstr($contentType, "/"), 1);
-            $array['validate'] = strstr($contentType, '/', true) == "image";
-            $array['fileSize'] = curl_getinfo($handle, CURLINFO_SIZE_DOWNLOAD);
-            // get image sizes
-            $temporary_image = imagecreatefromstring($data);
-            $array['imageSize'] = [
-                imagesx($temporary_image),
-                imagesy($temporary_image),
-                $type,
-                'mime' => $contentType
-            ];
-            imagedestroy($temporary_image);
-            $response = $array;
+            // SVG
+            if (strpos($contentType, "image/svg+xml") !== false) {
+                $validate = true;
+                $type = "svg";
+                $svg = new SimpleXMLElement($data);
+                $width = ((array) $svg->attributes()['width'])[0];
+                $height = ((array) $svg->attributes()['height'])[0];
+            }
+            // OTHER IMAGES TYPE
+            elseif (strstr($contentType, '/', true) == "image") {
+                $validate = true;
+                $type = substr(strstr($contentType, "/"), 1);
+                // get image sizes
+                $temporary_image = imagecreatefromstring($data);
+                $width = imagesx($temporary_image);
+                $height = imagesy($temporary_image);
+                imagedestroy($temporary_image);
+            }
+
         }
+        // CLOSE
         curl_close($handle);
+        // ARRAY RESPONSE
+        $response['validate'] = $validate;
+        $response['fileSize'] = $fileSize;
+        $response['imageSize'] = [
+            $width,
+            $height,
+            $type,
+            'mime'=>$contentType
+        ];
+        // RESPONSE
         return $response;
     }
 
@@ -147,5 +175,16 @@ class Curl {
         }else{
             return false;
         }
+    }
+
+    public static function getUrlContents(string $URL) {
+        $handle = curl_init($URL);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, 1);
+        if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") {
+            curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
+        }
+        $data = curl_exec($handle);
+        curl_close($handle);
+        return $data;
     }
 }
