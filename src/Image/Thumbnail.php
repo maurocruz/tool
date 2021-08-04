@@ -1,9 +1,14 @@
 <?php
 namespace Plinct\Tool\Image;
 
+use Exception;
+
 class Thumbnail extends ThumbnailAbstract {
 
-    protected function getThumbnail($width, $height = null) {
+    /**
+     * @throws Exception
+     */
+    protected function getThumbnail($width, $height = null): string {
         // SET NEW SIZES
         parent::setNewSizes($width,$height);
         // FILE THUMBS IF EXISTS
@@ -17,10 +22,14 @@ class Thumbnail extends ThumbnailAbstract {
     }
 
     private function saveThumbnail() {
-        // CREATE THUMBNAIL
-        $this->createThumbnail();
-        // SAVE THUMBNAIL
-        parent::saveImage();
+        if ($this->type == "image/svg+xml") {
+            $this->saveSvgThumbnail();
+        } else {
+            // CREATE THUMBNAIL
+            $this->createThumbnail();
+            // SAVE THUMBNAIL
+            parent::saveImage();
+        }
     }
 
     private function createThumbnail() {
@@ -30,11 +39,11 @@ class Thumbnail extends ThumbnailAbstract {
         parent::copyResizedImage();
     }
 
-    public function getNewRatio() {
+    public function getNewRatio(): float {
         return $this->newRatio;
     }
 
-    public function getThumbSrc() {
+    public function getThumbSrc(): string {
         return $this->thumbSrc;
     }
 
