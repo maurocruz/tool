@@ -9,11 +9,11 @@
         }
     ],
     "require": {
-        "php": "^7.2|^8.0"
+        "php": "^7.2|^8.0",
+        "ext-curl": "*"
     },
     "require-dev": {
         "ext-dom": "*",
-        "ext-curl": "*",
         "ext-json": "*",
         "ext-gd": "*",
         "ext-exif": "*",
