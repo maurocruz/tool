@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -29,7 +32,7 @@ class Image extends Thumbnail implements ImageTransformInterface {
         if (!$this->width) parent::setSizes();
         parent::setNewSizes($width, $height);
         parent::setTemporaryImage();
-        imagecopyresized($this->imageTrueColor, $this->imageTemporary, 0, 0, 0, 0, $this->newWidth, $this->newHeight, $this->width, $this->height);
+        imagecopyresized($this->imageTrueColor, $this->imageTemporary, 0, 0, 0, 0, (int)$this->newWidth, (int)$this->newHeight, $this->width, $this->height);
         return $this;
     }
 
@@ -106,7 +109,7 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @throws Exception
      */
-    public function getNewWidth(): int {
+    public function getNewWidth() {
         if (!$this->newWidth) parent::setSizes();
         return $this->newWidth;
     }
