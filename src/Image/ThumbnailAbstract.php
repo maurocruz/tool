@@ -1,16 +1,21 @@
 <?php
 namespace Plinct\Tool\Image;
 
+use DOMDocument;
+use Exception;
 use Plinct\Tool\Curl;
 
 class ThumbnailAbstract extends ImageAbstract {
     const IMAGE_MAX_SIZE = 1080;
-    protected $newWidth;
-    protected $newHeight;
-    protected $newRatio;
-    protected $thumbPath;
-    protected $thumbSrc;
+    protected $newWidth = null;
+    protected $newHeight = null;
+    protected $newRatio = null;
+    protected $thumbPath = null;
+    protected $thumbSrc = null;
 
+    /**
+     * @throws Exception
+     */
     protected function ThumbIfExists(): bool {
         $this->setThumbPath();
         // REMOTE FILE
@@ -25,6 +30,9 @@ class ThumbnailAbstract extends ImageAbstract {
         return false;
     }
 
+    /**
+     * @throws Exception
+     */
     public function setThumbPath(): void {
         $pathinfo = pathinfo($this->source);
         $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $pathinfo['extension'];
@@ -54,10 +62,10 @@ class ThumbnailAbstract extends ImageAbstract {
         $this->newHeight = (int) floor($this->newHeight);
         if ($this->newWidth > $this->width || $this->newHeight > $this->height) {
             if($this->ratio > $this->newRatio) {
-                $this->newHeight = (int) $this->height;
+                $this->newHeight = $this->height;
                 $this->newWidth = (int) ($this->newHeight * $this->newRatio );
             } else {
-                $this->newWidth = (int)  $this->width;
+                $this->newWidth = $this->width;
                 $this->newHeight = (int) ($this->newWidth / $this->newRatio);
             }
         }
@@ -78,7 +86,7 @@ class ThumbnailAbstract extends ImageAbstract {
             }
             // QUADRADO
             elseif ($this->newRatio == 1) {
-                $widthScale = ceil($this->newWidth * $this->ratio);
+                $widthScale = $this->ratio > 1 ? ceil($this->newWidth * $this->ratio) : $this->newWidth;
             }
             $this->imageTemporary = imagescale($this->imageTemporary, $widthScale);
             $src_x = (imagesx($this->imageTemporary) - $this->newWidth) / 2;
@@ -114,5 +122,16 @@ class ThumbnailAbstract extends ImageAbstract {
                 break;
         }
         imagedestroy($this->imageTrueColor);
+    }
+
+    protected function saveSvgThumbnail() {
+        $dom = new DOMDocument();
+        $svg = Curl::getUrlContents($this->source);
+        $dom->loadXML($svg);
+        $svgDom = $dom->documentElement;
+        $svgDom->setAttribute('width', $this->newWidth);
+        $svgDom->setAttribute('height', $this->newHeight);
+        $this->makeThumbDir();
+        $dom->save($this->thumbPath);
     }
 }

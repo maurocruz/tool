@@ -1,38 +1,45 @@
 <?php
 namespace Plinct\Tool\Image;
 
+use Exception;
 use Plinct\Tool\Curl;
 use Plinct\Tool\FileSystem\FileSystem;
+use SimpleXMLElement;
 
 abstract class ImageAbstract {
     // paths
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
-    protected $src;
-    protected $source;
-    private $path;
-    protected $pathFile;
-    protected $dirname;
-    protected $extension;
+    protected $src = '';
+    protected $source = '';
+    private $path = '';
+    protected $pathFile = '';
+    protected $dirname = '';
+    protected $extension = '';
     // measures
-    protected $width;
-    protected $height;
-    protected $type;
-    protected $ratio;
-    protected $fileSize;
-    protected $encodingFormat;
+    protected $width = 0;
+    protected $height = 0;
+    protected $type = '';
+    protected $ratio = 0;
+    protected $fileSize = 0;
+    protected $encodingFormat = '';
     // state
-    protected $remote;
-    protected $validate;
+    protected $remote = false;
+    protected $validate = false;
     // server paths
-    protected $docRoot;
-    protected $requestUri;
-    protected $serverHost;
-    protected $serverSchema;
-    protected $sourceScheme;
-    protected $sourceHost;
+    protected $docRoot = '';
+    protected $requestUri = '';
+    protected $serverHost = '';
+    protected $serverSchema = '';
+    protected $sourceScheme = '';
+    protected $sourceHost = '';
     // image transforms
     protected $imageTrueColor;
     protected $imageTemporary;
+
+    public function setExtension() {
+        $pathInfo = pathinfo($this->source);
+        $this->extension = $pathInfo['extension'];
+    }
 
     protected function setServerRequests() {
         $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
@@ -48,6 +55,9 @@ abstract class ImageAbstract {
         $this->path = $parseUrl['path'] ?? false;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setSizes() {
         if (!$this->validate) $this->setValidate();
         if ($this->validate === false) {
@@ -55,17 +65,30 @@ abstract class ImageAbstract {
            $this->setRemote();
            $this->setSizesForRemote();
         } elseif($this->remote === false) {
-            $imageSize = getimagesize($this->pathFile);
-            $this->width = $imageSize[0];
-            $this->height = $imageSize[1];
-            $this->type = $imageSize[2];
-            $this->encodingFormat = $imageSize['mime'];
-            $this->extension = substr(strstr($imageSize['mime'], '/'), 1);
+            if ($this->extension == "svg") {
+                $svg = new SimpleXMLElement(file_get_contents($this->pathFile));
+                $attributes = $svg->attributes();
+                $width = (array) $attributes['width'];
+                $height = (array) $attributes['height'];
+                $this->width = $width[0];
+                $this->height = $height[0];
+                $this->type = "image/svg+xml";
+                $this->encodingFormat = "image/svg+xml";
+            } else {
+                $imageSize = getimagesize($this->pathFile);
+                $this->width = $imageSize[0];
+                $this->height = $imageSize[1];
+                $this->type = $imageSize[2];
+                $this->encodingFormat = $imageSize['mime'];
+            }
             $this->ratio = $this->width / $this->height;
             $this->fileSize = filesize($this->pathFile);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setSizesForRemote() {
         if ($this->remote) {
             $data = (new Curl($this->source))->getImageData();
@@ -74,12 +97,17 @@ abstract class ImageAbstract {
             $imageSize = $data['imageSize'];
             $this->width = $imageSize[0];
             $this->height = $imageSize[1];
-            $this->ratio = $this->width / $this->height;
+            if (is_numeric($this->width)) {
+                $this->ratio = $this->width / $this->height;
+            }
             $this->extension = $imageSize[2];
             $this->encodingFormat = $imageSize['mime'];
         }
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setValidate() {
         if (!$this->remote) $this->setRemote();
         if (!$this->pathFile) $this->setPathInfo();
@@ -113,6 +141,9 @@ abstract class ImageAbstract {
         $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setSrc() {
         if ($this->remote === null) $this->setRemote();
         if ($this->validate === null) $this->setValidate();
@@ -130,7 +161,10 @@ abstract class ImageAbstract {
         }
     }
 
-    protected function getValidate() {
+    /**
+     * @throws Exception
+     */
+    protected function getValidate(): bool {
         if($this->validate === null) $this->setValidate();
         return $this->validate;
     }
