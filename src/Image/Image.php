@@ -82,7 +82,7 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @throws Exception
      */
-    public function getFileSize(): ?int {
+    public function getFileSize(): ?float {
         if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
     }
