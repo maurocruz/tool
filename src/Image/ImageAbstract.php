@@ -58,29 +58,34 @@ abstract class ImageAbstract {
     /**
      * @throws Exception
      */
-    protected function setSizes() {
+    protected function setSizes()
+    {
         if (!$this->validate) $this->setValidate();
+
         if ($this->validate === false) {
            $this->source = self::NO_IMAGE;
            $this->setRemote();
            $this->setSizesForRemote();
-        } elseif($this->remote === false) {
+        }
+        elseif($this->remote === false) {
             if ($this->extension == "svg") {
                 $svg = new SimpleXMLElement(file_get_contents($this->pathFile));
                 $attributes = $svg->attributes();
                 $width = (array) $attributes['width'];
                 $height = (array) $attributes['height'];
-                $this->width = $width[0];
-                $this->height = $height[0];
+                $this->width = (int) $width[0];
+                $this->height = (int) $height[0];
                 $this->type = "image/svg+xml";
                 $this->encodingFormat = "image/svg+xml";
-            } else {
+            }
+            else {
                 $imageSize = getimagesize($this->pathFile);
-                $this->width = $imageSize[0];
-                $this->height = $imageSize[1];
+                $this->width = (int) $imageSize[0];
+                $this->height = (int) $imageSize[1];
                 $this->type = $imageSize[2];
                 $this->encodingFormat = $imageSize['mime'];
             }
+
             $this->ratio = $this->width / $this->height;
             $this->fileSize = filesize($this->pathFile);
         }
@@ -95,8 +100,8 @@ abstract class ImageAbstract {
             $this->validate = $data['validate'];
             $this->fileSize = $data['fileSize'];
             $imageSize = $data['imageSize'];
-            $this->width = $imageSize[0];
-            $this->height = $imageSize[1];
+            $this->width = (int) $imageSize[0];
+            $this->height = (int) $imageSize[1];
             if (is_numeric($this->width)) {
                 $this->ratio = $this->width / $this->height;
             }
