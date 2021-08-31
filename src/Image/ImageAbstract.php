@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -6,49 +9,127 @@ use Plinct\Tool\Curl;
 use Plinct\Tool\FileSystem\FileSystem;
 use SimpleXMLElement;
 
-abstract class ImageAbstract {
-    // paths
+abstract class ImageAbstract
+{
+    /**
+     *
+     */
     const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
-    protected $src = '';
-    protected $source = '';
-    private $path = '';
-    protected $pathFile = '';
-    protected $dirname = '';
-    protected $extension = '';
-    // measures
-    protected $width = 0;
-    protected $height = 0;
-    protected $type = '';
-    protected $ratio = 0;
-    protected $fileSize = 0;
-    protected $encodingFormat = '';
-    // state
-    protected $remote = false;
-    protected $validate = false;
-    // server paths
-    protected $docRoot = '';
-    protected $requestUri = '';
-    protected $serverHost = '';
-    protected $serverSchema = '';
-    protected $sourceScheme = '';
-    protected $sourceHost = '';
-    // image transforms
+    /**
+     * @var string
+     */
+    protected string $src = '';
+    /**
+     * @var string
+     */
+    protected string $source = '';
+    /**
+     * @var string
+     */
+    private string $path = '';
+    /**
+     * @var string
+     */
+    protected string $pathFile = '';
+    /**
+     * @var string
+     */
+    protected string $dirname = '';
+    /**
+     * @var string
+     */
+    protected string $extension = '';
+    /**
+     * @var int
+     */
+    protected int $width = 0;
+    /**
+     * @var int
+     */
+    protected int $height = 0;
+    /**
+     * @var string
+     */
+    protected string $type = '';
+    /**
+     * @var float
+     */
+    protected float $ratio = 0;
+    /**
+     * @var int|float
+     */
+    protected float $fileSize = 0;
+    /**
+     * @var string
+     */
+    protected string $encodingFormat = '';
+    /**
+     * @var bool
+     */
+    protected bool $remote = false;
+    /**
+     * @var bool
+     */
+    protected bool $validate = false;
+    /**
+     * @var string
+     */
+    protected string $docRoot = '';
+    /**
+     * @var string
+     */
+    protected string $requestUri = '';
+    /**
+     * @var string
+     */
+    protected string $serverHost = '';
+    /**
+     * @var string
+     */
+    protected string $serverSchema = '';
+    /**
+     * @var string
+     */
+    protected string $sourceScheme = '';
+    /**
+     * @var string
+     */
+    protected string $sourceHost = '';
+
+    /**
+     * @var
+     */
     protected $imageTrueColor;
+    /**
+     * @var
+     */
     protected $imageTemporary;
 
-    public function setExtension() {
+    /**
+     *
+     */
+    public function setExtension()
+    {
         $pathInfo = pathinfo($this->source);
         $this->extension = $pathInfo['extension'];
     }
 
-    protected function setServerRequests() {
+    /**
+     *
+     */
+    protected function setServerRequests()
+    {
         $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
         $this->requestUri = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $this->serverHost = filter_input(INPUT_SERVER, 'HTTP_HOST');
         $this->serverSchema = filter_input(INPUT_SERVER, 'HTTPS') && filter_input(INPUT_SERVER, 'HTTPS') != 'off' ? "https" : "http";
     }
 
-    protected function setParseUrl() {
+    /**
+     *
+     */
+    protected function setParseUrl()
+    {
         $parseUrl = parse_url($this->source);
         $this->sourceScheme = $parseUrl['scheme'] ?? false;
         $this->sourceHost = $parseUrl['host'] ?? false;
@@ -94,69 +175,97 @@ abstract class ImageAbstract {
     /**
      * @throws Exception
      */
-    protected function setSizesForRemote() {
+    protected function setSizesForRemote()
+    {
         if ($this->remote) {
             $data = (new Curl($this->source))->getImageData();
+
             $this->validate = $data['validate'];
-            $this->fileSize = $data['fileSize'];
-            $imageSize = $data['imageSize'];
-            $this->width = (int) $imageSize[0];
-            $this->height = (int) $imageSize[1];
-            if (is_numeric($this->width)) {
-                $this->ratio = $this->width / $this->height;
+            if ($data['validate']) {
+                $this->fileSize = $data['fileSize'];
+                $imageSize = $data['imageSize'];
+
+                $this->width = (int)$imageSize[0];
+                $this->height = (int)$imageSize[1];
+
+                if (is_numeric($imageSize[0])) {
+                    $this->ratio = $this->width / $this->height;
+                }
+
+                $this->extension = $imageSize[2];
+                $this->encodingFormat = $imageSize['mime'];
             }
-            $this->extension = $imageSize[2];
-            $this->encodingFormat = $imageSize['mime'];
         }
     }
 
     /**
      * @throws Exception
      */
-    protected function setValidate() {
+    protected function setValidate()
+    {
         if (!$this->remote) $this->setRemote();
         if (!$this->pathFile) $this->setPathInfo();
+
         if ($this->remote) {
             $this->setSizesForRemote();
+
         } elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
             $this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
+
         } else {
             $this->src = self::NO_IMAGE;
             $this->validate = false;
         }
     }
 
-    protected function setPathInfo() {
+    /**
+     *
+     */
+    protected function setPathInfo()
+    {
         if (!$this->remote) $this->setRemote();
         if (!$this->path) $this->setParseUrl();
+
         if ($this->remote) {
             $this->pathFile = $this->source;
+
         } elseif(is_uploaded_file($this->path)) {
             $this->pathFile = $this->path;
+
         } else {
             if (!$this->docRoot) $this->setServerRequests();
             $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
         }
+
         $pathInfo = pathinfo($this->path);
+
         $this->dirname = $pathInfo['dirname'];
     }
 
-    protected function setRemote() {
+    /**
+     *
+     */
+    protected function setRemote()
+    {
         if (!$this->sourceHost) $this->setParseUrl();
+
         $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
     }
 
     /**
      * @throws Exception
      */
-    protected function setSrc() {
+    protected function setSrc()
+    {
         if ($this->remote === null) $this->setRemote();
         if ($this->validate === null) $this->setValidate();
+
         if ($this->remote) {
             if ($this->validate === false) {
                $this->source = self::NO_IMAGE;
             }
             $this->src = $this->source;
+
         } else {
             if (!$this->sourceScheme && $this->validate) {
                 $this->src = str_replace($this->docRoot, $this->serverSchema . "://" . $this->serverHost, $this->pathFile);
@@ -169,17 +278,28 @@ abstract class ImageAbstract {
     /**
      * @throws Exception
      */
-    protected function getValidate(): bool {
+    protected function getValidate(): bool
+    {
         if($this->validate === null) $this->setValidate();
         return $this->validate;
     }
 
-    protected function setTrueColorImage(int $width = null, int $height = null) {
+    /**
+     * @param int|null $width
+     * @param int|null $height
+     */
+    protected function setTrueColorImage(int $width = null, int $height = null)
+    {
         $this->imageTrueColor = imagecreatetruecolor($width ?? $this->newWidth, $height ?? $this->newHeight);
     }
 
-    protected function setTemporaryImage() {
+    /**
+     *
+     */
+    protected function setTemporaryImage()
+    {
         if (!$this->imageTrueColor) $this->setTrueColorImage();
+
         switch ($this->type) {
             case '1':
                 $this->imageTemporary = imagecreatefromgif($this->pathFile);
@@ -195,7 +315,11 @@ abstract class ImageAbstract {
         }
     }
 
-    protected function saveToFile(string $destinationFile) {
+    /**
+     * @param string $destinationFile
+     */
+    protected function saveToFile(string $destinationFile)
+    {
         FileSystem::makeDirectory(dirname($destinationFile), 0777, true);
 
         $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
@@ -212,7 +336,9 @@ abstract class ImageAbstract {
                 imagepng($this->imageTrueColor, $pathfile);
                 break;
         }
+
         imagedestroy($this->imageTemporary);
+
         imagedestroy($this->imageTrueColor);
     }
 }

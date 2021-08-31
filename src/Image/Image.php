@@ -6,13 +6,14 @@ namespace Plinct\Tool\Image;
 
 use Exception;
 
-class Image extends Thumbnail implements ImageTransformInterface {
-
+class Image extends Thumbnail implements ImageTransformInterface
+{
     /**
      * Image constructor.
      * @param string|null $source
      */
-    public function __construct(string $source = null) {
+    public function __construct(string $source = null)
+    {
         $this->setServerRequests();
         // DIRECTORY IMAGE
         $posLastSeparator = strrpos($this->requestUri, "/");
@@ -28,7 +29,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
      * @return ImageTransformInterface
      * @throws Exception
      */
-    public function resize($width, $height = null): ImageTransformInterface {
+    public function resize($width, $height = null): ImageTransformInterface
+    {
         if (!$this->width) parent::setSizes();
         parent::setNewSizes($width, $height);
         parent::setTemporaryImage();
@@ -36,7 +38,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
         return $this;
     }
 
-    public function saveToFile(string $destinationFile) {
+    public function saveToFile(string $destinationFile)
+    {
         parent::saveToFile($destinationFile);
     }
 
@@ -46,7 +49,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
      * @return string
      * @throws Exception
      */
-    public function thumbnail($width, $height = null): string {
+    public function thumbnail($width, $height = null): string
+    {
         if (!$this->width) parent::setSizes();
         return parent::getThumbnail($width, $height);
     }
@@ -54,7 +58,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @return bool
      */
-    public function getRemote(): bool {
+    public function getRemote(): bool
+    {
         if ($this->remote === null) $this->setRemote();
         return $this->remote;
     }
@@ -64,7 +69,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
      * @return int|null
      * @throws Exception
      */
-    public function getWidth(): ?int {
+    public function getWidth(): ?int
+    {
         if (!$this->width) $this->setSizes();
         return $this->width;
     }
@@ -74,7 +80,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
      * @return int|null
      * @throws Exception
      */
-    public function getHeight(): ?int {
+    public function getHeight(): ?int
+    {
         if (!$this->height) $this->setSizes();
         return $this->height;
     }
@@ -82,18 +89,25 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @throws Exception
      */
-    public function getFileSize(): ?float {
+    public function getFileSize(): ?float
+    {
         if (!$this->fileSize) $this->setSizes();
         return $this->fileSize;
     }
-    public function getSource(): string {
+
+    /**
+     * @return string
+     */
+    public function getSource(): string
+    {
         return $this->source;
     }
 
     /**
      * @throws Exception
      */
-    public function getSrc(): string {
+    public function getSrc(): string
+    {
         if (!$this->src) $this->setSrc();
         return $this->src;
     }
@@ -101,7 +115,8 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @throws Exception
      */
-    public function getNewHeight(): int {
+    public function getNewHeight(): int
+    {
         if (!$this->newHeight) parent::setSizes();
         return $this->newHeight;
     }
@@ -109,12 +124,17 @@ class Image extends Thumbnail implements ImageTransformInterface {
     /**
      * @throws Exception
      */
-    public function getNewWidth() {
+    public function getNewWidth(): ?int
+    {
         if (!$this->newWidth) parent::setSizes();
         return $this->newWidth;
     }
 
-    public function getEncodingFormat(): string {
+    /**
+     * @return string
+     */
+    public function getEncodingFormat(): string
+    {
         return $this->encodingFormat;
     }
 }
