@@ -82,7 +82,7 @@ class ThumbnailAbstract extends ImageAbstract
     protected function setNewSizes($inputWidth,$inputHeight)
     {
         // NEW WIDTH
-        $this->newWidth = $inputWidth > 1 ? $inputWidth : self::IMAGE_MAX_SIZE * $inputWidth;
+        $this->newWidth = $inputWidth > 1 ? (int)$inputWidth : (int)(self::IMAGE_MAX_SIZE * $inputWidth);
 
         // NEW HEIGHT
         if (!$inputHeight) {
@@ -123,22 +123,22 @@ class ThumbnailAbstract extends ImageAbstract
         } else {
             // PAISAGEM
             if ($this->newRatio > 1) {
-                $widthScale = $this->ratio < $this->newRatio ? $this->newWidth : ceil($this->newHeight * $this->ratio);
+                $widthScale = $this->ratio < $this->newRatio ? $this->newWidth : round(ceil($this->newHeight * $this->ratio));
             }
             // RETRATO
             elseif ($this->newRatio < 1) {
-                $widthScale = ceil($this->newHeight * $this->ratio);
+                $widthScale = round(ceil($this->newHeight * $this->ratio));
             }
             // QUADRADO
             elseif ($this->newRatio == 1) {
-                $widthScale = $this->ratio > 1 ? ceil($this->newWidth * $this->ratio) : $this->newWidth;
+                $widthScale = $this->ratio > 1 ? round(ceil($this->newWidth * $this->ratio)) : $this->newWidth;
             }
 
-            $this->imageTemporary = imagescale($this->imageTemporary, $widthScale);
+            $this->imageTemporary = imagescale($this->imageTemporary, (int)$widthScale);
             $src_x = (imagesx($this->imageTemporary) - $this->newWidth) / 2;
             $src_y = (imagesy($this->imageTemporary) - $this->newHeight) / 2;
 
-            imagecopymerge($this->imageTrueColor, $this->imageTemporary, 0, 0, $src_x, $src_y, $this->newWidth, $this->newHeight, 100);
+            imagecopymerge($this->imageTrueColor, $this->imageTemporary, 0, 0, (int)$src_x, (int)$src_y, $this->newWidth, $this->newHeight, 100);
         }
 
         imagedestroy($this->imageTemporary);

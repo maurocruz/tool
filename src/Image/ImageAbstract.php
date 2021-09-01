@@ -7,7 +7,7 @@ namespace Plinct\Tool\Image;
 use Exception;
 use Plinct\Tool\Curl;
 use Plinct\Tool\FileSystem\FileSystem;
-use SimpleXMLElement;
+use \SimpleXMLElement;
 
 abstract class ImageAbstract
 {
@@ -48,9 +48,9 @@ abstract class ImageAbstract
      */
     protected int $height = 0;
     /**
-     * @var string
+     * @var int|string
      */
-    protected string $type = '';
+    protected $type;
     /**
      * @var float
      */

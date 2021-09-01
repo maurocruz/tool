@@ -1,23 +1,63 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Plinct\Tool;
 
-use DOMDocument;
+use \DOMDocument;
 
 class Sitemap
 {
+    /**
+     * @var
+     */
     private $filename;
+    /**
+     * @var string
+     */
     private $version = "1.0";
+    /**
+     * @var string
+     */
     private $encoding = "UTF-8";
+    /**
+     * @var DOMDocument
+     */
     private $xml;
+    /**
+     * @var string
+     */
     private static $xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+    /**
+     * @var string
+     */
     private static $xmlnsImage = "http://www.google.com/schemas/sitemap-image/1.1";
+    /**
+     * @var string
+     */
     private static $xmlnsNews = "http://www.google.com/schemas/sitemap-news/0.9";
+    /**
+     * @var \DOMElement|false
+     */
     private $urlset;
+    /**
+     * @var
+     */
     private $url;
+    /**
+     * @var
+     */
     private $extension;
+    /**
+     * @var string
+     */
     private static $HOST;
 
-    public function __construct($filename) {
+    /**
+     * @param $filename
+     */
+    public function __construct($filename)
+    {
         $this->filename = $filename;
         $this->xml = new DOMDocument($this->version, $this->encoding);
         $this->urlset = $this->xml->createElement("urlset");
@@ -25,7 +65,12 @@ class Sitemap
         self::$HOST = (filter_input(INPUT_SERVER, 'HTTPS') == 'on' ? "https" : "http") . ":" . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . filter_input(INPUT_SERVER,'HTTP_HOST');
     }
 
-    public function saveSitemap($data, $extension = "simple") {
+    /**
+     * @param $data
+     * @param string $extension
+     */
+    public function saveSitemap($data, string $extension = "simple")
+    {
         $this->extension = $extension;
         $this->setNamespace();
 
@@ -36,12 +81,20 @@ class Sitemap
         $this->saveXml();
     }
 
-    private function setNamespace($extension = null) {
+    /**
+     * @param null $extension
+     */
+    private function setNamespace($extension = null)
+    {
         if ($extension == "image")  $this->urlset->setAttribute("xmlns:image", self::$xmlnsImage);
         if ($this->extension == "news")   $this->urlset->setAttribute("xmlns:$this->extension", self::$xmlnsNews);
     }
 
-    private function appendUrl($value) {
+    /**
+     * @param $value
+     */
+    private function appendUrl($value)
+    {
         $this->url = $this->xml->createElement("url");
             $this->appendTag("loc",$value['loc']);
             if (isset($value['lastmod']))       $this->appendTag("lastmod",$value['lastmod']);
@@ -50,22 +103,35 @@ class Sitemap
         $this->urlset->appendChild($this->url);
     }
 
-    private function appendTag($tag, $value) {
+    /**
+     * @param $tag
+     * @param $value
+     */
+    private function appendTag($tag, $value)
+    {
         $this->url->appendChild($this->xml->createElement($tag,$value));
     }
 
-    private function appendImage($value) {
+    /**
+     * @param $value
+     */
+    private function appendImage($value)
+    {
         foreach ($value as $item) {
-            $loc = strpos($item['contentUrl'], self::$HOST) === false ? self::$HOST.$item['contentUrl'] : $item['contentUrl'];
+            $loc = strpos($item['contentUrl'], self::$HOST) === false ? self::$HOST . $item['contentUrl'] : $item['contentUrl'];
             $imageElement = $this->xml->createElement("image:image");
             $imageElement->appendChild($this->xml->createElement("image:loc",$loc));
             if(isset($item['caption'])) $imageElement->appendChild($this->xml->createElement("image:caption",strip_tags($item['caption'])));
-            $imageElement->appendChild($this->xml->createElement("image:license",$item['license']));
+            $imageElement->appendChild($this->xml->createElement("image:license", $item['license'] ?? ''));
             $this->url->appendChild($imageElement);
         }
     }
 
-    private function appendNews($value) {
+    /**
+     * @param $value
+     */
+    private function appendNews($value)
+    {
         $newsNews = $this->xml->createElement("news:news");
             $newsPublication = $this->xml->createElement("news:publication");
                 $newsPublication->appendChild($this->xml->createElement("news:name", rawurlencode($value['name'])));
@@ -76,7 +142,11 @@ class Sitemap
         $this->url->appendChild($newsNews);
     }
 
-    private function saveXml() {
+    /**
+     *
+     */
+    private function saveXml()
+    {
         $this->xml->appendChild($this->urlset);
         $this->xml->save($this->filename);
     }
