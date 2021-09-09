@@ -7,6 +7,7 @@ namespace Plinct\Tool\Image;
 use Exception;
 use Plinct\Tool\Curl;
 use Plinct\Tool\FileSystem\FileSystem;
+use Plinct\Web\Debug\Debug;
 use \SimpleXMLElement;
 
 abstract class ImageAbstract
@@ -24,9 +25,9 @@ abstract class ImageAbstract
      */
     protected string $source = '';
     /**
-     * @var string
+     * @var ?string
      */
-    private string $path = '';
+    private ?string $path = null;
     /**
      * @var string
      */
@@ -88,13 +89,13 @@ abstract class ImageAbstract
      */
     protected string $serverSchema = '';
     /**
-     * @var string
+     * @var ?string
      */
-    protected string $sourceScheme = '';
+    protected ?string $sourceScheme = null;
     /**
-     * @var string
+     * @var ?string
      */
-    protected string $sourceHost = '';
+    protected ?string $sourceHost = null;
 
     /**
      * @var
@@ -131,9 +132,9 @@ abstract class ImageAbstract
     protected function setParseUrl()
     {
         $parseUrl = parse_url($this->source);
-        $this->sourceScheme = $parseUrl['scheme'] ?? false;
-        $this->sourceHost = $parseUrl['host'] ?? false;
-        $this->path = $parseUrl['path'] ?? false;
+        $this->sourceScheme = $parseUrl['scheme'] ?? null;
+        $this->sourceHost = $parseUrl['host'] ?? null;
+        $this->path = $parseUrl['path'] ?? null;
     }
 
     /**
