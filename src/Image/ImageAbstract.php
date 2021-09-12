@@ -7,8 +7,7 @@ namespace Plinct\Tool\Image;
 use Exception;
 use Plinct\Tool\Curl;
 use Plinct\Tool\FileSystem\FileSystem;
-use Plinct\Web\Debug\Debug;
-use \SimpleXMLElement;
+use SimpleXMLElement;
 
 abstract class ImageAbstract
 {
@@ -37,9 +36,9 @@ abstract class ImageAbstract
      */
     protected string $dirname = '';
     /**
-     * @var string
+     * @var ?string
      */
-    protected string $extension = '';
+    protected ?string $extension = null;
     /**
      * @var int
      */
@@ -112,7 +111,7 @@ abstract class ImageAbstract
     public function setExtension()
     {
         $pathInfo = pathinfo($this->source);
-        $this->extension = $pathInfo['extension'];
+        $this->extension = $pathInfo['extension'] ?? null;
     }
 
     /**
