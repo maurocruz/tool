@@ -1,22 +1,44 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Plinct\Tool;
 
 use Plinct\Api\Type\ImageObject;
 
 class StructuredData
 {
-    private static $HOST;
+    /**
+     * @var string
+     */
+    private static string $HOST;
 
-    public function __construct() {
+    /**
+     *
+     */
+    public function __construct()
+    {
         self::$HOST = (filter_input(INPUT_SERVER, "REQUEST_SCHEME") ?? filter_input(INPUT_SERVER, "HTTP_X_FORWARDED_PROTO"))."://".filter_input(INPUT_SERVER, "HTTP_HOST");
     }
 
-    public function getJson(array $value): string {
+    /**
+     * @param array $value
+     * @return string
+     */
+    public function getJson(array $value): string
+    {
         return json_encode(self::getArrayLd($value), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
-    private function getArrayLd(array $valueProperty, string $property = null): ?array {
+    /**
+     * @param array $valueProperty
+     * @param string|null $property
+     * @return array|null
+     */
+    private function getArrayLd(array $valueProperty, string $property = null): ?array
+    {
         $data = $property ? $valueProperty[$property] : $valueProperty;
+
         if ($data) {
             if (array_key_exists('@type', $data)) {
                 $type = $data['@type'];
@@ -24,6 +46,7 @@ class StructuredData
                 unset($data[$idName]);
                 unset($data['identifier']);
                 return $this->organizeArray($type, $data);
+
             } else {
                 foreach ($data as $valueItem) {
                     $newData[] = is_array($valueItem) ? self::getArrayLd($valueItem) : $valueProperty;
@@ -34,11 +57,17 @@ class StructuredData
         return null;
     }
 
-    private function organizeArray($type,$value): array {
+    /**
+     * @param $type
+     * @param $value
+     * @return array
+     */
+    private function organizeArray($type,$value): array
+    {
         switch ($type) {
             case "Article":
-                $value['dateModified'] = DateTime::formatISO8601($value['dateModified'], -3);
-                $value['datePublished'] = DateTime::formatISO8601($value['datePublished'], -3);
+                $value['dateModified'] = DateTime::formatISO8601($value['dateModified']);
+                $value['datePublished'] = DateTime::formatISO8601($value['datePublished']);
                 $value['image'] = self::$HOST . ImageObject::getRepresentativeImageOfPage($value['image']);
                 unset($value['publishied']);
                 unset($value['publisherType']);
@@ -49,11 +78,11 @@ class StructuredData
                 unset($value['obs']);
                 break;
             case "Event":
-                $value['startDate'] = DateTime::formatISO8601($value['startDate'], -3);
-                $value['endDate'] = DateTime::formatISO8601($value['endDate'], -3);
+                $value['startDate'] = DateTime::formatISO8601($value['startDate']);
+                $value['endDate'] = DateTime::formatISO8601($value['endDate']);
                 $value['description'] = strip_tags($value['description']);
                 $value['location'] = self::getArrayLd($value,'location');
-                $value['image'] = self::$HOST . ImageObject::getRepresentativeImageOfPage($value['image']);
+                $value['image'] = ImageObject::getRepresentativeImageOfPage($value['image']);
                 unset($value['create_time']);
                 unset($value['address']);
                 break;
@@ -61,7 +90,7 @@ class StructuredData
                 $value["@id"] = "https://plinct.com.br/schema/LocaBusiness";
                 $value['description'] = strip_tags($value['description']);
                 $value['address'] = $value['location']['address'] ?? $value['address'] && self::getArrayLd($value,'address');
-                $value['image'] = self::$HOST . ImageObject::getRepresentativeImageOfPage($value['image']);
+                $value['image'] = ImageObject::getRepresentativeImageOfPage($value['image']);
                 $value['telephone'] = $value['contactPoint'][0]['telephone'];
                 $value['contactPoint'] = self::getArrayLd($value,'contactPoint');
                 $value['location'] = self::getArrayLd($value,'location');
