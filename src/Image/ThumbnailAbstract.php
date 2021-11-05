@@ -61,7 +61,7 @@ class ThumbnailAbstract extends ImageAbstract
     public function setThumbPath(): void
     {
         $pathinfo = pathinfo($this->source);
-        $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $pathinfo['extension'];
+        $thumbFile = "/thumbs/" . urlencode($pathinfo['filename']) . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $pathinfo['extension'];
 
         if ($this->remote) {
             $this->thumbPath = $pathinfo['dirname'] . $thumbFile;
@@ -89,7 +89,7 @@ class ThumbnailAbstract extends ImageAbstract
             $this->newHeight =  (int)round($this->newWidth / $this->ratio);
 
         } else {
-            $this->newHeight = $inputHeight > 1 && is_string($inputHeight) ? $inputHeight : (int)round($this->newWidth * $inputHeight);
+            $this->newHeight = $inputHeight > 1 && is_string($inputHeight) ? (int)$inputHeight : (int)round($this->newWidth * $inputHeight);
         }
 
         // NEW RATIO
