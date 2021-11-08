@@ -59,6 +59,8 @@ class StructuredData
      */
     public function ready(): string
     {
+        $this->data['description'] = strip_tags($this->data['description']);
+
         return json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
