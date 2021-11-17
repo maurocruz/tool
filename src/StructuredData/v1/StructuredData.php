@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Plinct\Tool\StructuredData\v1;
 
+use Plinct\Tool\StructuredData\v1\Type\Article;
 use Plinct\Tool\StructuredData\v1\Type\Event;
 use Plinct\Tool\StructuredData\v1\Type\ImageObject;
 use Plinct\Tool\StructuredData\v1\Type\Place;
@@ -41,6 +42,8 @@ class StructuredData
     private static function swicth($data): ?array
     {
         switch ($data['@type']) {
+            case 'Article':
+                return (new Article($data))->parse();
             case 'Event':
                 return (new Event($data))->parse();
             case 'ImageObject':
