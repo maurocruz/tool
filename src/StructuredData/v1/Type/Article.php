@@ -12,8 +12,11 @@ class Article extends StructuredDataTypeAbstract
     public function parse(): array
     {
         parent::includeProperty('headline');
+        parent::includeProperty('articleSection');
         parent::includeProperty('publisher');
         parent::includeProperty('datePublished');
+        parent::includeProperty('dateModified');
+        parent::includeProperty('dateCreated');
         parent::includeProperty('author');
 
         $this->newData['image'] = (new ImageObject($this->data['image']))->parse();
