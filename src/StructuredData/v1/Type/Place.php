@@ -14,7 +14,7 @@ class Place extends StructuredDataTypeAbstract
         parent::includeProperty('latitude');
         parent::includeProperty('longitude');
 
-        $this->newData['address'] = (new PostalAddress($this->data['address']))->parse();
+        $this->newData['address'] = $this->data['address'] ? (new PostalAddress($this->data['address']))->parse() : null;
 
         return $this->newData;
     }
