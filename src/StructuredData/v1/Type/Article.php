@@ -19,7 +19,7 @@ class Article extends StructuredDataTypeAbstract
         parent::includeProperty('dateCreated');
         parent::includeProperty('author');
 
-        $this->newData['image'] = (new ImageObject($this->data['image']))->parse();
+        if (isset($this->newData['image'])) $this->newData['image'] = (new ImageObject($this->data['image']))->parse();
 
         return $this->newData;
     }
