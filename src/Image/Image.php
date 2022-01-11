@@ -46,11 +46,13 @@ class Image extends Thumbnail implements ImageTransformInterface
     /**
      * @param $width
      * @param null $height
-     * @return string
+     * @return ?string
      * @throws Exception
      */
-    public function thumbnail($width, $height = null): string
+    public function thumbnail($width, $height = null): ?string
     {
+        if (!$this->isValidImage()) return null;
+
         if (!$this->width) parent::setSizes();
         return parent::getThumbnail($width, $height);
     }

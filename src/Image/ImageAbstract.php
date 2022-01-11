@@ -99,11 +99,11 @@ abstract class ImageAbstract
     /**
      * @var object|null
      */
-    protected ?object $imageTrueColor;
+    protected $imageTrueColor;
     /**
      * @var object|null
      */
-    protected ?object $imageTemporary;
+    protected $imageTemporary;
 
     /**
      *
@@ -232,7 +232,7 @@ abstract class ImageAbstract
         } elseif(is_uploaded_file($this->path)) {
             $this->pathFile = $this->path;
 
-        } else {
+        } elseif (is_string($this->path)) {
             if (!$this->docRoot) $this->setServerRequests();
             $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
         }
