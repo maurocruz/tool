@@ -60,7 +60,6 @@ class Image extends Thumbnail implements ImageTransformInterface
      */
     public function getRemote(): bool
     {
-        if ($this->remote === null) $this->setRemote();
         return $this->remote;
     }
 
@@ -136,5 +135,13 @@ class Image extends Thumbnail implements ImageTransformInterface
     public function getEncodingFormat(): string
     {
         return $this->encodingFormat;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function isValidImage(): bool
+    {
+        return $this->getValidate();
     }
 }

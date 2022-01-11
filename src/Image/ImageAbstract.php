@@ -66,11 +66,11 @@ abstract class ImageAbstract
     /**
      * @var bool
      */
-    protected bool $remote = false;
+    protected ?bool $remote = null;
     /**
-     * @var bool
+     * @var ?bool
      */
-    protected bool $validate = false;
+    protected ?bool $validate = null;
     /**
      * @var string
      */
@@ -97,13 +97,13 @@ abstract class ImageAbstract
     protected ?string $sourceHost = null;
 
     /**
-     * @var
+     * @var object|null
      */
-    protected $imageTrueColor;
+    protected ?object $imageTrueColor;
     /**
-     * @var
+     * @var object|null
      */
-    protected $imageTemporary;
+    protected ?object $imageTemporary;
 
     /**
      *
@@ -237,9 +237,10 @@ abstract class ImageAbstract
             $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
         }
 
-        $pathInfo = pathinfo($this->path);
-
-        $this->dirname = $pathInfo['dirname'];
+        if (is_string($this->path)) {
+            $pathInfo = pathinfo($this->path);
+            $this->dirname = $pathInfo['dirname'];
+        }
     }
 
     /**
