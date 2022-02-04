@@ -15,9 +15,9 @@ class Curl
      */
     private ?array $headers = null;
     /**
-     * @var string|null
+     * @var bool|string
      */
-    private ?string $exec = null;
+    private $exec = false;
 
     /**
      *
@@ -44,7 +44,7 @@ class Curl
      */
     public function getInfo()
     {
-        if (!$this->exec) $this->exec();
+        if (!$this->exec) $this->execute();
 
         return curl_getinfo(self::$HANDLE);
     }
@@ -90,7 +90,7 @@ class Curl
         curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYHOST, false);
 
-        $this->exec();
+        $this->execute();
         return $this;
     }
 
@@ -109,7 +109,7 @@ class Curl
     /**
      *
      */
-    private function exec()
+    private function execute(): void
     {
         $this->exec = curl_exec(self::$HANDLE);
     }
@@ -123,7 +123,7 @@ class Curl
             curl_setopt(self::$HANDLE, CURLOPT_HTTPHEADER, $this->headers);
         }
 
-        if (!$this->exec) $this->exec();
+        if (!$this->exec) $this->execute();
 
         if (curl_error(self::$HANDLE) !== '' && $this->exec === false) {
             $return  = curl_error(self::$HANDLE);
