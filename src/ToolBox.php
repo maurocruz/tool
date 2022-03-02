@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plinct\Tool;
 
+use Plinct\Tool\Image\Image;
 use Plinct\Tool\StructuredData\v1\StructuredData;
 use Plinct\Tool\Curl\v1\Curl;
 
@@ -26,7 +27,6 @@ class ToolBox
         return new Curl();
     }
 
-
     /**
      * @param $data
      * @param string $mode
@@ -43,5 +43,25 @@ class ToolBox
             return $mode == "string" ? $data[0]['contentUrl'] : $data[0];
         }
         return null;
+    }
+
+  /**
+   * @param string|null $source
+   * @return Image
+   */
+    public static function image(string $source = null): Image
+    {
+      return new Image($source);
+    }
+
+  /**
+   * @param array $array
+   * @param string $valueName
+   * @param string|null $propertyName
+   * @return array|false|mixed
+   */
+    public static function searchByValue(array $array, string $valueName, string $propertyName = null)
+    {
+      return ArrayTool::searchByValue($array, $valueName, $propertyName);
     }
 }

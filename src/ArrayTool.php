@@ -1,11 +1,21 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Plinct\Tool;
 
-class ArrayTool {
-
-    public static function searchByValue(array $array, string $valueName, string $propertyName = null) {
+class ArrayTool
+{
+  /**
+   * @param array $array
+   * @param string $valueName
+   * @param string|null $propertyName
+   * @return array|false|mixed
+   */
+    public static function searchByValue(array $array, string $valueName, string $propertyName = null)
+    {
         if ($array) {
-            // IF HAS VALUE IN ARRAY
+            // IF IT HAS VALUE IN ARRAY
             if (array_search($valueName,$array)) {
                 return $propertyName ? $array[$propertyName] : $array;
             }
@@ -32,7 +42,8 @@ class ArrayTool {
      * @param string $ordering
      * @return array
      */
-    public static function sortByName(array $array, string $name, string $ordering = 'asc'): array {
+    public static function sortByName(array $array, string $name, string $ordering = 'asc'): array
+    {
         usort($array, function($a, $b) use ($name, $ordering) {
             $propertyA = $a[$name];
             $propertyB = $b[$name];

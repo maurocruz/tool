@@ -7,6 +7,11 @@ namespace Plinct\Tool\Image;
 interface ImageTransformInterface
 {
     /**
+     * @return mixed
+     */
+    public function getSrc();
+
+    /**
      * @param $width
      * @param null $height
      * @return ImageTransformInterface
