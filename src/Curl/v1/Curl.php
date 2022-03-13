@@ -85,12 +85,8 @@ class Curl
      */
     public function connectWithLocalhost(): Curl
     {
-        curl_close(self::$HANDLE);
-
         curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYHOST, false);
-
-        $this->execute();
         return $this;
     }
 
@@ -122,6 +118,9 @@ class Curl
         if ($this->headers) {
             curl_setopt(self::$HANDLE, CURLOPT_HTTPHEADER, $this->headers);
         }
+
+        // for localhost
+        if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
 
         if (!$this->exec) $this->execute();
 
