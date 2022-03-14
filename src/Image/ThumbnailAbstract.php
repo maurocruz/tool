@@ -38,7 +38,7 @@ class ThumbnailAbstract extends ImageAbstract
   /**
    * @throws Exception
    */
-  protected function ThumbIfExists(): bool
+  protected function thumbIfExists(): bool
   {
 		$this->setThumbPath();
     // REMOTE FILE
