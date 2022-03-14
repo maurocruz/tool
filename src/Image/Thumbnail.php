@@ -41,7 +41,7 @@ class Thumbnail extends ThumbnailAbstract
             // CREATE THUMBNAIL
             $this->createThumbnail();
             // SAVE THUMBNAIL
-            parent::saveImage();
+            parent::saveToFile($this->thumbPath);
         }
     }
 

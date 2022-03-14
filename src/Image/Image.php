@@ -35,14 +35,9 @@ class Image extends Thumbnail implements ImageTransformInterface
         parent::setNewSizes($width, $height);
 
         parent::setTemporaryImage();
-        if ($this->imageTemporary) {
-          parent::copyResizedImage();
-        }
+        if ($this->imageTemporary) parent::copyResizedImage();
 
-        if (!parent::ThumbIfExists()) {
-          parent::saveImage();
-        }
-        $this->src = $this->thumbSrc;
+        $this->src = $this->thumbSrc ?? '';
         return $this;
     }
 

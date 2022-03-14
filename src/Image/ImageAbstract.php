@@ -95,13 +95,12 @@ abstract class ImageAbstract
      * @var ?string
      */
     protected ?string $sourceHost = null;
-
-    /**
-     * @var object|null
-     */
+	/**
+	 * @var resource
+	 */
     protected $imageTrueColor;
     /**
-     * @var object|null
+     * @var resource
      */
     protected $imageTemporary;
 
@@ -337,8 +336,6 @@ abstract class ImageAbstract
                 imagepng($this->imageTrueColor, $pathfile);
                 break;
         }
-
-        imagedestroy($this->imageTemporary);
 
         imagedestroy($this->imageTrueColor);
     }
