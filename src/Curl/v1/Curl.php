@@ -28,6 +28,16 @@ class Curl
         curl_setopt(self::$HANDLE, CURLOPT_HEADER, false);
     }
 
+	/**
+	 * @param string $header
+	 * @return Curl
+	 */
+	public function addHeaders(string $header): Curl
+	{
+		$this->headers[] = $header;
+		return $this;
+	}
+
     /**
      * @param string $url
      * @return $this
@@ -97,10 +107,17 @@ class Curl
     public function params(array $params): Curl
     {
         if ($params) {
-            curl_setopt(self::$HANDLE, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
+           curl_setopt(self::$HANDLE, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
         }
         return $this;
     }
+
+		public function put($data)
+		{
+			curl_setopt(self::$HANDLE, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt(self::$HANDLE, CURLOPT_CUSTOMREQUEST, "PUT");
+			curl_setopt(self::$HANDLE, CURLOPT_POSTFIELDS, http_build_query($data));
+		}
 
     /**
      *
