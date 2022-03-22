@@ -4,16 +4,16 @@ namespace Plinct\Tool;
 use Exception;
 
 class DateTime {
-    public $year;
-    public $month;
-    public $day;
-    public $hour;
-    public $minute;
-    public $second;
-    public $weekday;
-    public $literalMonth;
+    public string $year;
+    public string $month;
+    public string $day;
+    public string $hour;
+    public string $minute;
+    public string $second;
+    public string $weekday;
+    public ?string $literalMonth;
     public $literalMonthAbrev;
-    public $literalWeekDay;
+    public ?string $literalWeekDay;
     public $literalWeekDayAbrev;
 
     /**

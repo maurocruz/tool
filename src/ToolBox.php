@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Plinct\Tool;
 
+use Plinct\Tool\DateTime\DateTimeInterface;
 use Plinct\Tool\Image\Image;
 use Plinct\Tool\StructuredData\v1\StructuredData;
 use Plinct\Tool\Curl\v1\Curl;
 
 class ToolBox
 {
+	public static function dateTime(string $datetime = null): DateTimeInterface
+	{
+		return new \Plinct\Tool\DateTime\DateTime($datetime);
+	}
     /**
      * @param $data
      * @return StructuredData
