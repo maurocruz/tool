@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plinct\Tool;
 
+use Exception;
 use Plinct\Tool\DateTime\DateTimeInterface;
 use Plinct\Tool\Image\Image;
 use Plinct\Tool\StructuredData\v1\StructuredData;
@@ -37,11 +38,12 @@ class ToolBox
     return new Curl();
   }
 
-  /**
-   * @param $data
-   * @param string $mode
-   * @return null
-   */
+	/**
+	 * @param $data
+	 * @param string $mode
+	 * @return null
+	 * @throws Exception
+	 */
   public static function getRepresentativeImageOfPage($data, string $mode = "string")
   {
 		$returnImage = null;
@@ -57,8 +59,9 @@ class ToolBox
       if(!$returnImage) $returnImage = $mode == "string" ? $data[0]['contentUrl'] : $data[0];
     }
 
-		// Verifica se o que foi escolhido é uma imagem válida
-	  if (is_file($returnImage)) {
+	  // Verifica se o que foi escolhido é uma imagem válida
+	  $image = new Image($returnImage);
+		if ($image->isValidImage()) {
 		  return $returnImage;
 	  }
 
