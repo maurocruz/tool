@@ -11,62 +11,77 @@ use Plinct\Tool\Curl\v1\Curl;
 
 class ToolBox
 {
+	/**
+	 * @param string|null $datetime
+	 * @return DateTimeInterface
+	 */
 	public static function dateTime(string $datetime = null): DateTimeInterface
 	{
 		return new \Plinct\Tool\DateTime\DateTime($datetime);
 	}
-    /**
-     * @param $data
-     * @return StructuredData
-     */
-    public static function StructuredData($data): StructuredData
-    {
-        return new StructuredData($data);
-    }
 
-    /**
-     * @return Curl
-     */
-    public static function Curl(): Curl
-    {
-        return new Curl();
-    }
+  /**
+   * @param $data
+   * @return StructuredData
+   */
+  public static function StructuredData($data): StructuredData
+  {
+    return new StructuredData($data);
+  }
 
-    /**
-     * @param $data
-     * @param string $mode
-     * @return null
-     */
-    public static function getRepresentativeImageOfPage($data, string $mode = "string")
-    {
-        if ($data) {
-            foreach ($data as $valueImage) {
-                if (isset($valueImage['representativeOfPage']) && $valueImage['representativeOfPage'] == true) {
-                    return $mode == "string" ? $valueImage['contentUrl'] : $valueImage;
-                }
-            }
-            return $mode == "string" ? $data[0]['contentUrl'] : $data[0];
+  /**
+   * @return Curl
+   */
+  public static function Curl(): Curl
+  {
+    return new Curl();
+  }
+
+  /**
+   * @param $data
+   * @param string $mode
+   * @return null
+   */
+  public static function getRepresentativeImageOfPage($data, string $mode = "string")
+  {
+		$returnImage = null;
+
+    if ($data) {
+			// verifica se entre as imagens existe alguma selecionada como representativa
+			foreach ($data as $valueImage) {
+        if (isset($valueImage['representativeOfPage']) && $valueImage['representativeOfPage'] == true) {
+					$returnImage = $mode == "string" ? $valueImage['contentUrl'] : $valueImage;
         }
-        return null;
+      }
+			// se não houver imagem marcada como representativa, escolhe a primeira
+      if(!$returnImage) $returnImage = $mode == "string" ? $data[0]['contentUrl'] : $data[0];
     }
 
-  /**
-   * @param string|null $source
-   * @return Image
-   */
-    public static function image(string $source = null): Image
-    {
-      return new Image($source);
-    }
+		// Verifica se o que foi escolhido é uma imagem válida
+	  if (is_file($returnImage)) {
+		  return $returnImage;
+	  }
 
-  /**
-   * @param array $array
-   * @param string $valueName
-   * @param string|null $propertyName
-   * @return array|false|mixed
-   */
-    public static function searchByValue(array $array, string $valueName, string $propertyName = null)
-    {
-      return ArrayTool::searchByValue($array, $valueName, $propertyName);
-    }
+	  return null;
+  }
+
+/**
+ * @param string|null $source
+ * @return Image
+ */
+  public static function image(string $source = null): Image
+  {
+    return new Image($source);
+  }
+
+/**
+ * @param array $array
+ * @param string $valueName
+ * @param string|null $propertyName
+ * @return array|false|mixed
+ */
+  public static function searchByValue(array $array, string $valueName, string $propertyName = null)
+  {
+    return ArrayTool::searchByValue($array, $valueName, $propertyName);
+  }
 }
