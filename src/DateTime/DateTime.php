@@ -48,7 +48,7 @@ class DateTime implements DateTimeInterface
 			$this->year = $datetime->format("Y");
 			$this->month = $datetime->format("n");
 			$this->day = $datetime->format("d");
-			$this->hour = $datetime->format("h");
+			$this->hour = $datetime->format("H");
 			$this->minute = $datetime->format("i");
 			$this->second = $datetime->format("s");
 			$this->weekday = $datetime->format("N");
