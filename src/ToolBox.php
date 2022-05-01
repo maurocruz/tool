@@ -41,7 +41,7 @@ class ToolBox
 	/**
 	 * @param $data
 	 * @param string $mode
-	 * @return null
+	 * @return null|array|string
 	 * @throws Exception
 	 */
   public static function getRepresentativeImageOfPage($data, string $mode = "string")
@@ -51,19 +51,25 @@ class ToolBox
     if ($data) {
 			// verifica se entre as imagens existe alguma selecionada como representativa
 			foreach ($data as $valueImage) {
-        if (isset($valueImage['representativeOfPage']) && $valueImage['representativeOfPage'] == true) {
-					$returnImage = $mode == "string" ? $valueImage['contentUrl'] : $valueImage;
+        if (isset($valueImage['representativeOfPage']) && $valueImage['representativeOfPage'] == '1') {
+	        $returnImage = $mode == "string" ? $valueImage['contentUrl'] : $valueImage;
         }
       }
 			// se não houver imagem marcada como representativa, escolhe a primeira
-      if(!$returnImage) $returnImage = $mode == "string" ? $data[0]['contentUrl'] : $data[0];
-    }
+      if(!$returnImage) {
+				$returnImage = $mode == "string" ? $data[0]['contentUrl'] : $data[0];
+      }
 
-	  // Verifica se o que foi escolhido é uma imagem válida
-	  $image = new Image($returnImage);
-		if ($image->isValidImage()) {
-		  return $returnImage;
-	  }
+			if (is_string($returnImage)) {
+				// Verifica se o que foi escolhido é uma imagem válida
+				$image = new Image($returnImage);
+				if ($image->isValidImage()) {
+					return $returnImage;
+				}
+			} else {
+				return $returnImage;
+			}
+    }
 
 	  return null;
   }
