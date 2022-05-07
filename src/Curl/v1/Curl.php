@@ -6,27 +6,31 @@ namespace Plinct\Tool\Curl\v1;
 
 class Curl
 {
-    /**
-     * @var false|resource
-     */
-    private static $HANDLE;
-    /**
-     * @var array|null
-     */
-    private ?array $headers = null;
-    /**
-     * @var bool|string
-     */
-    private $exec = false;
+	/**
+	 * @var string
+	 */
+	private string $method;
+  /**
+   * @var false|resource
+   */
+  private $handle;
+  /**
+   * @var array|null
+   */
+  private ?array $headers = null;
+  /**
+   * @var bool|string
+   */
+  private $exec = false;
 
-    /**
-     *
-     */
-    public function __construct()
-    {
-        self::$HANDLE = curl_init();
-        curl_setopt(self::$HANDLE, CURLOPT_HEADER, false);
-    }
+  /**
+   *
+   */
+  public function __construct(string $url = '')
+  {
+    $this->handle = curl_init($url);
+    curl_setopt($this->handle, CURLOPT_HEADER, false);
+  }
 
 	/**
 	 * @param string $header
@@ -38,26 +42,24 @@ class Curl
 		return $this;
 	}
 
-    /**
-     * @param string $url
-     * @return $this
-     */
-    public function setUrl(string $url): Curl
-    {
-        curl_setopt(self::$HANDLE, CURLOPT_URL, $url);
+  /**
+   * @param string $url
+   * @return $this
+   */
+  public function setUrl(string $url): Curl
+  {
+    curl_setopt($this->handle, CURLOPT_URL, $url);
+    return $this;
+  }
 
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getInfo()
-    {
-        if (!$this->exec) $this->execute();
-
-        return curl_getinfo(self::$HANDLE);
-    }
+  /**
+   * @return mixed
+   */
+  public function getInfo()
+  {
+    if (!$this->exec) $this->execute();
+    return curl_getinfo($this->handle);
+  }
 
     /**
      * @param string $method
@@ -65,7 +67,13 @@ class Curl
      */
     public function method(string $method): Curl
     {
-        curl_setopt(self::$HANDLE, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+			$this->method = strtoupper($method);
+
+			if($this->method == "POST") {
+				curl_setopt($this->handle, CURLOPT_POST, true);
+			} else {
+				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+			}
         return $this;
     }
 
@@ -75,7 +83,7 @@ class Curl
      */
     public function authorizationBear(string $token): Curl
     {
-        if($token) curl_setopt(self::$HANDLE, CURLOPT_HTTPHEADER, ["Authorization: Bearer $token"]);
+        if($token) curl_setopt($this->handle, CURLOPT_HTTPHEADER, ["Authorization: Bearer $token"]);
         return $this;
     }
 
@@ -84,9 +92,7 @@ class Curl
      */
     public function returnWithJson(): Curl
     {
-        curl_setopt(self::$HANDLE, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt(self::$HANDLE, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
-
+        curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
         return $this;
     }
 
@@ -95,8 +101,8 @@ class Curl
      */
     public function connectWithLocalhost(): Curl
     {
-        curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt(self::$HANDLE, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, false);
         return $this;
     }
 
@@ -106,17 +112,37 @@ class Curl
      */
     public function params(array $params): Curl
     {
-        if ($params) {
-           curl_setopt(self::$HANDLE, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
-        }
-        return $this;
+      if ($params) {
+				if ($this->method == "POST") {
+					curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($params));
+				} else {
+					curl_setopt($this->handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
+				}
+      }
+      return $this;
     }
 
+	/**
+	 * @param $data
+	 * @return $this
+	 */
+		public function post($data): Curl
+		{
+			curl_setopt($this->handle, CURLOPT_RETURNTRANSFER,true);
+			curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
+			curl_setopt($this->handle, CURLOPT_POST, true);
+			return $this;
+		}
+
+	/**
+	 * @param $data
+	 * @return void
+	 */
 		public function put($data)
 		{
-			curl_setopt(self::$HANDLE, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt(self::$HANDLE, CURLOPT_CUSTOMREQUEST, "PUT");
-			curl_setopt(self::$HANDLE, CURLOPT_POSTFIELDS, http_build_query($data));
+			curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "PUT");
+			curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
 		}
 
     /**
@@ -124,7 +150,7 @@ class Curl
      */
     private function execute(): void
     {
-        $this->exec = curl_exec(self::$HANDLE);
+        $this->exec = curl_exec($this->handle);
     }
 
     /**
@@ -133,7 +159,7 @@ class Curl
     public function ready(): string
     {
         if ($this->headers) {
-            curl_setopt(self::$HANDLE, CURLOPT_HTTPHEADER, $this->headers);
+            curl_setopt($this->handle, CURLOPT_HTTPHEADER, $this->headers);
         }
 
         // for localhost
@@ -141,12 +167,12 @@ class Curl
 
         if (!$this->exec) $this->execute();
 
-        if (curl_error(self::$HANDLE) !== '' && $this->exec === false) {
-            $return  = curl_error(self::$HANDLE);
+        if (curl_error($this->handle) !== '' && $this->exec === false) {
+            $return  = curl_error($this->handle);
         } else {
             $return = $this->exec;
         }
-        curl_close(self::$HANDLE);
+        curl_close($this->handle);
 
         return $return;
     }

@@ -30,12 +30,13 @@ class ToolBox
     return new StructuredData($data);
   }
 
-  /**
-   * @return Curl
-   */
-  public static function Curl(): Curl
+	/**
+	 * @param string $url
+	 * @return Curl
+	 */
+  public static function Curl(string $url = ''): Curl
   {
-    return new Curl();
+    return new Curl($url);
   }
 
 	/**
