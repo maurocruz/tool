@@ -61,119 +61,126 @@ class Curl
     return curl_getinfo($this->handle);
   }
 
-    /**
-     * @param string $method
-     * @return $this
-     */
-    public function method(string $method): Curl
-    {
-			$this->method = strtoupper($method);
+  /**
+   * @param string $method
+   * @return $this
+   */
+  public function method(string $method): Curl
+  {
+		$this->method = strtoupper($method);
+		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
 
-			if($this->method == "POST") {
-				curl_setopt($this->handle, CURLOPT_POST, true);
+    return $this;
+  }
+
+  /**
+   * @param string $token
+   * @return $this
+   */
+  public function authorizationBear(string $token): Curl
+  {
+    if($token) curl_setopt($this->handle, CURLOPT_HTTPHEADER, ["Authorization: Bearer $token"]);
+    return $this;
+  }
+
+  /**
+   * @return $this
+   */
+  public function returnWithJson(): Curl
+  {
+    curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+    return $this;
+  }
+
+  /**
+   * @return $this
+   */
+  public function connectWithLocalhost(): Curl
+  {
+    curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, false);
+    return $this;
+  }
+
+  /**
+   * @param array $params
+   * @return $this
+   */
+  public function params(array $params): Curl
+  {
+    if ($params) {
+			if ($this->method == "POST" || $this->method == "PUT" || $this->method == "DELETE") {
+				curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($params));
 			} else {
-				curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+				curl_setopt($this->handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
 			}
-        return $this;
     }
-
-    /**
-     * @param string $token
-     * @return $this
-     */
-    public function authorizationBear(string $token): Curl
-    {
-        if($token) curl_setopt($this->handle, CURLOPT_HTTPHEADER, ["Authorization: Bearer $token"]);
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function returnWithJson(): Curl
-    {
-        curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function connectWithLocalhost(): Curl
-    {
-        curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, false);
-        return $this;
-    }
-
-    /**
-     * @param array $params
-     * @return $this
-     */
-    public function params(array $params): Curl
-    {
-      if ($params) {
-				if ($this->method == "POST") {
-					curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($params));
-				} else {
-					curl_setopt($this->handle, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_SLASHES));
-				}
-      }
-      return $this;
-    }
+    return $this;
+  }
 
 	/**
 	 * @param $data
 	 * @return $this
 	 */
-		public function post($data): Curl
-		{
-			curl_setopt($this->handle, CURLOPT_RETURNTRANSFER,true);
-			curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
-			curl_setopt($this->handle, CURLOPT_POST, true);
-			return $this;
-		}
+	public function post($data): Curl
+	{
+		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
+		curl_setopt($this->handle, CURLOPT_POST, true);
+		return $this;
+	}
 
 	/**
 	 * @param $data
 	 * @return void
 	 */
-		public function put($data)
-		{
-			curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "PUT");
-			curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
-		}
+	public function put($data)
+	{
+		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
+	}
 
-    /**
-     *
-     */
-    private function execute(): void
-    {
-        $this->exec = curl_exec($this->handle);
+	/**
+  * @param $data
+  * @return $this
+  */
+	public function delete($data): Curl
+	{
+		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+		curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
+		return $this;
+	}
+
+  /**
+   *
+   */
+  private function execute(): void
+  {
+    $this->exec = curl_exec($this->handle);
+  }
+
+  /**
+   * @return string
+   */
+  public function ready(): string
+  {
+    if ($this->headers) {
+      curl_setopt($this->handle, CURLOPT_HTTPHEADER, $this->headers);
     }
+    // for localhost
+    if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
 
-    /**
-     * @return string
-     */
-    public function ready(): string
-    {
-        if ($this->headers) {
-            curl_setopt($this->handle, CURLOPT_HTTPHEADER, $this->headers);
-        }
+    if (!$this->exec) $this->execute();
 
-        // for localhost
-        if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
-
-        if (!$this->exec) $this->execute();
-
-        if (curl_error($this->handle) !== '' && $this->exec === false) {
-            $return  = curl_error($this->handle);
-        } else {
-            $return = $this->exec;
-        }
-        curl_close($this->handle);
-
-        return $return;
+    if (curl_error($this->handle) !== '' && $this->exec === false) {
+      $return  = curl_error($this->handle);
+    } else {
+      $return = $this->exec;
     }
+    curl_close($this->handle);
+
+    return $return;
+  }
 }
