@@ -14,15 +14,15 @@ abstract class ImageAbstract
     /**
      *
      */
-    const NO_IMAGE = "https://pirenopolis.tur.br/App/static/cms/images/noImage.jpg";
+    const NO_IMAGE = "https://plinct.com.br/App/static/cms/images/noImage.jpg";
     /**
      * @var string
      */
     protected string $src = '';
     /**
-     * @var string
+     * @var ?string
      */
-    protected string $source = '';
+    protected ?string $source = null;
     /**
      * @var ?string
      */
@@ -66,7 +66,7 @@ abstract class ImageAbstract
     /**
      * @var bool
      */
-    protected ?bool $remote = null;
+    protected bool $remote = false;
     /**
      * @var ?bool
      */
@@ -202,19 +202,22 @@ abstract class ImageAbstract
      */
     protected function setValidate()
     {
-        if (!$this->remote) $this->setRemote();
-        if (!$this->pathFile) $this->setPathInfo();
+			if($this->source) {
+				if (!$this->remote) $this->setRemote();
+				if (!$this->pathFile) $this->setPathInfo();
 
-        if ($this->remote) {
-            $this->setSizesForRemote();
+				if ($this->remote) {
+					$this->setSizesForRemote();
 
-        } elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
-            $this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
+				} elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
+					$this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
 
-        } else {
-            $this->src = self::NO_IMAGE;
-            $this->validate = false;
-        }
+				} else {
+					$this->validate = false;
+				}
+			} else {
+				$this->validate = false;
+			}
     }
 
     /**
@@ -257,8 +260,8 @@ abstract class ImageAbstract
      */
     protected function setSrc()
     {
-        if ($this->remote === null) $this->setRemote();
-        if ($this->validate === null) $this->setValidate();
+        if ($this->remote == null) $this->setRemote();
+        if ($this->validate == null) $this->setValidate();
 
         if ($this->remote) {
             if ($this->validate === false) {

@@ -66,9 +66,9 @@ class Thumbnail extends ThumbnailAbstract
     }
 
     /**
-     * @return string
+     * @return ?string
      */
-    public function getThumbSrc(): string
+    public function getThumbSrc(): ?string
     {
         return $this->thumbSrc;
     }
