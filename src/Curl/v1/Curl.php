@@ -30,17 +30,24 @@ class Curl
   {
 		$this->url = $url;
     $this->handle = curl_init($url);
-    curl_setopt($this->handle, CURLOPT_HEADER, false);
   }
 
 	/**
 	 * @param string $header
 	 * @return Curl
 	 */
-	public function addHeaders(string $header): Curl
+	public function setHeaders(string $header): Curl
 	{
 		$this->headers[] = $header;
 		return $this;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getHeaders(): ?array
+	{
+		return $this->headers;
 	}
 
   /**
@@ -69,7 +76,7 @@ class Curl
    */
   public function authorizationBear(string $token): Curl
   {
-    if($token) curl_setopt($this->handle, CURLOPT_HTTPHEADER, ["Authorization: Bearer $token"]);
+    if($token) $this->setHeaders("Authorization: Bearer $token");
     return $this;
   }
 
@@ -104,13 +111,32 @@ class Curl
 	}
 
 	/**
-	 * @param $data
+	 * @param array $params
+	 * @param array|null $FILES
 	 * @return $this
 	 */
-	public function post($data): Curl {
-		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
+	public function post(array $params, array $FILES = null ): Curl
+	{
+		if ($FILES) {
+			foreach ($FILES as $key => $value) {
+				foreach ($value['error'] as $index => $error) {
+					if ($error === 0) {
+						$params["{$key}[$index]"] = curl_file_create(
+							$value['tmp_name'][$index],
+							$value['type'][$index],
+							$value['name'][$index]
+						);
+					}
+				}
+			}
+
+			$this->setHeaders('Content-Type: multipart/form-data');
+			$this->setHeaders('User-Agent: '.$_SERVER['HTTP_USER_AGENT']);
+		}
+
 		curl_setopt($this->handle, CURLOPT_POST, true);
+		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->handle, CURLOPT_POSTFIELDS, $params);
 		return $this;
 	}
 
