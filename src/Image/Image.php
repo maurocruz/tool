@@ -14,7 +14,6 @@ class Image extends Thumbnail implements ImageTransformInterface
    */
   public function __construct(string $source = null)
   {
-		$source = $source ? str_replace(' ','%20',$source) : null;
     $this->setServerRequests();
     // DIRECTORY IMAGE
     $posLastSeparator = strrpos($this->requestUri, "/");

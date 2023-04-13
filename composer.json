@@ -3,26 +3,27 @@
     "description": "Tools for Plinct app",
     "license": "proprietary",
     "authors": [
-        {
-            "name": "Mauro Cruz",
-            "email": "maurocruz@pirenopolis.tur.br"
-        }
+      {
+        "name": "Mauro Cruz",
+        "email": "maurocruz@pirenopolis.tur.br"
+      }
     ],
     "require": {
-        "php": "^7.4|^8.0",
-        "ext-curl": "*"
+      "php": "^7.4|^8.0",
+      "ext-curl": "*",
+      "ext-gd": "*",
+      "ext-exif": "*",
+      "ext-simplexml": "*",
+      "ext-fileinfo": "*",
+      "ext-dom": "*"
     },
     "require-dev": {
-        "ext-dom": "*",
-        "ext-json": "*",
-        "ext-gd": "*",
-        "ext-exif": "*",
-        "ext-fileinfo": "*",
-        "ext-gettext": "*"
+      "ext-json": "*",
+      "ext-gettext": "*"
     },
     "autoload": {
-        "psr-4": {
-            "Plinct\\Tool\\": "src/"
-        }        
+      "psr-4": {
+        "Plinct\\Tool\\": "src/"
+      }
     }
 }

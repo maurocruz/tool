@@ -59,7 +59,9 @@ class ThumbnailAbstract extends ImageAbstract
   public function setThumbPath(): void
   {
     $pathinfo = pathinfo($this->source);
-    $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $pathinfo['extension'];
+
+		$newExtension = $this->type == 2 ? 'webp' : $this->extension;
+    $thumbFile = "/thumbs/" . $pathinfo['filename'] . sprintf("(%sw%s)", $this->newWidth, $this->newHeight) . "." . $newExtension;
 
     if ($this->remote) {
       $this->thumbPath = $pathinfo['dirname'] . $thumbFile;
