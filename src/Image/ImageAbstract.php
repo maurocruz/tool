@@ -84,10 +84,6 @@ abstract class ImageAbstract
    */
   protected string $serverHost = '';
   /**
-   * @var string
-   */
-  protected string $serverSchema = '';
-  /**
    * @var ?string
    */
   protected ?string $sourceScheme = null;
@@ -125,7 +121,6 @@ abstract class ImageAbstract
     $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
     $this->requestUri = filter_input(INPUT_SERVER, 'REQUEST_URI');
     $this->serverHost = filter_input(INPUT_SERVER, 'HTTP_HOST');
-    $this->serverSchema = filter_input(INPUT_SERVER, 'HTTPS') && filter_input(INPUT_SERVER, 'HTTPS') != 'off' ? "https" : "http";
   }
 
   /**
@@ -289,7 +284,7 @@ abstract class ImageAbstract
 
       } else {
           if (!$this->sourceScheme && $this->validate) {
-              $this->src = str_replace($this->docRoot, $this->serverSchema . "://" . $this->serverHost, $this->pathFile);
+              $this->src = str_replace($this->docRoot, "//" . $this->serverHost, $this->pathFile);
           } else {
               $this->src = $this->source;
           }
