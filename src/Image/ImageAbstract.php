@@ -159,7 +159,7 @@ abstract class ImageAbstract
       }
       else {
         $imageSize = getimagesize($this->pathFile);
-				if ($this->extension !== 'png') {
+				if ($this->extension !== 'png' && $this->extension !== "gif") {
 					$exif = exif_read_data($this->pathFile);
 					$this->exifOrientation = $exif['Orientation'] ?? false;
 				}
