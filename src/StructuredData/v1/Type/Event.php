@@ -7,6 +7,7 @@ namespace Plinct\Tool\StructuredData\v1\Type;
 use DateTime;
 use DateTimeInterface;
 use Exception;
+use Plinct\Web\Debug\Debug;
 
 class Event extends StructuredDataTypeAbstract
 {
@@ -18,14 +19,14 @@ class Event extends StructuredDataTypeAbstract
   {
 		// DATES
 	  // start date format
-	  if (substr($this->data['startDate'],11) === "00:00:00") {
+	  if (substr($this->data['startDate'],11) == "00:00:00") {
 		  $startDate = substr($this->data['startDate'],0,10);
 	  } else {
 		  $sd = new DateTime($this->data['startDate']);
 			$startDate = $sd->format(DateTimeInterface::ATOM);
 	  }
 		// end date format
-		if (substr($this->data['startDate'],11) === "00:00:00" ) {
+		if (substr($this->data['endDate'],11) == "00:00:00" ) {
 			$endDate = substr($this->data['endDate'],0,10);
 		} else {
 			$ed = new DateTime($this->data['endDate']);
