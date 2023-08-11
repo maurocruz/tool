@@ -83,6 +83,10 @@ abstract class ImageAbstract
    * @var string
    */
   protected string $serverHost = '';
+	/**
+	 * @var string
+	 */
+	protected string $protocol;
   /**
    * @var ?string
    */
@@ -121,6 +125,14 @@ abstract class ImageAbstract
     $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
     $this->requestUri = filter_input(INPUT_SERVER, 'REQUEST_URI');
     $this->serverHost = filter_input(INPUT_SERVER, 'HTTP_HOST');
+		if (isset($_SERVER['HTTPS'])
+			&& ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) || isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+			&& $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+		{
+			$this->protocol = 'https:';
+		} else {
+			$this->protocol = 'http';
+		}
   }
 
   /**
@@ -284,7 +296,7 @@ abstract class ImageAbstract
 
       } else {
           if (!$this->sourceScheme && $this->validate) {
-              $this->src = str_replace($this->docRoot, "//" . $this->serverHost, $this->pathFile);
+              $this->src = str_replace($this->docRoot, $this->protocol . "//" . $this->serverHost, $this->pathFile);
           } else {
               $this->src = $this->source;
           }

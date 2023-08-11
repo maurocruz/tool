@@ -15,6 +15,7 @@ class Image extends Thumbnail implements ImageTransformInterface
   public function __construct(string $source = null)
   {
     $this->setServerRequests();
+		$source = substr($source,0,2) === '//' ? $this->protocol . $source : $source;
     // DIRECTORY IMAGE
     $posLastSeparator = strrpos($this->requestUri, "/");
     $requestUri = substr($this->requestUri, 0, ($posLastSeparator + 1));

@@ -10,9 +10,9 @@ use Plinct\Tool\StringTool;
 class FileSystem
 {
 	/**
-	 * @var
+	 * @var string
 	 */
-  private static $PATHFILE;
+  private static string $PATHFILE;
 	/**
 	 * @var Directory|false|null
 	 */
@@ -106,7 +106,7 @@ class FileSystem
 		$extension = substr(strstr($type,"/"),1);
 		$filename = pathinfo($name)['filename'];
 		$newName = $prefix . substr(md5(StringTool::removeAccentsAndSpaces($filename)),0,16) . "." . $extension;
-		return $this->getDir()->path . DIRECTORY_SEPARATOR . $newName;
+		return $this->getDir()->path . (substr($this->getDir()->path, -1) !== '/' ? DIRECTORY_SEPARATOR : null) . $newName;
 	}
 
 	/**

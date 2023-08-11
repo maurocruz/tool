@@ -71,7 +71,7 @@ class ThumbnailAbstract extends ImageAbstract
       if (!$this->pathFile) $this->setPathInfo();
       if (!$this->width) $this->setSizes();
       $this->thumbPath = $this->docRoot . str_replace($this->sourceScheme."://".$this->sourceHost,"",$pathinfo['dirname']) . $thumbFile;
-      $this->thumbSrc = "//" . $this->serverHost . $this->dirname . $thumbFile;
+      $this->thumbSrc = $this->protocol . "//" . $this->serverHost . $this->dirname . $thumbFile;
     }
   }
 
