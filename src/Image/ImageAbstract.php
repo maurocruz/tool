@@ -129,7 +129,7 @@ abstract class ImageAbstract
 			&& ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) || isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
 			&& $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
 		{
-			$this->protocol = 'https:';
+			$this->protocol = 'https';
 		} else {
 			$this->protocol = 'http';
 		}
