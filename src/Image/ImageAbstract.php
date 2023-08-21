@@ -296,7 +296,7 @@ abstract class ImageAbstract
 
       } else {
           if (!$this->sourceScheme && $this->validate) {
-              $this->src = str_replace($this->docRoot, $this->protocol . "//" . $this->serverHost, $this->pathFile);
+              $this->src = str_replace($this->docRoot, $this->protocol . "://" . $this->serverHost, $this->pathFile);
           } else {
               $this->src = $this->source;
           }
