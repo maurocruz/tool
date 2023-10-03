@@ -154,11 +154,9 @@ abstract class ImageAbstract
     if (!$this->validate) $this->setValidate();
 
     if ($this->validate === false) {
-     $this->source = self::NO_IMAGE;
      $this->setRemote();
      $this->setSizesForRemote();
-    }
-    elseif($this->remote === false) {
+    } else if ($this->remote === false) {
       if ($this->extension == "svg") {
         $svg = new SimpleXMLElement(file_get_contents($this->pathFile));
         $attributes = $svg->attributes();
@@ -168,8 +166,7 @@ abstract class ImageAbstract
         $this->height = (int) $height[0];
         $this->type = "image/svg+xml";
         $this->encodingFormat = "image/svg+xml";
-      }
-      else {
+      } else {
         $imageSize = getimagesize($this->pathFile);
 				if ($this->extension !== 'png' && $this->extension !== "gif") {
 					$exif = exif_read_data($this->pathFile);
