@@ -44,7 +44,7 @@ class Image extends Thumbnail implements ImageTransformInterface
 			}
 		}
 
-    $this->src = $this->thumbSrc ?? '';
+    $this->src = $this->validate ? $this->thumbSrc : null;
     return $this;
   }
 
@@ -109,8 +109,8 @@ class Image extends Thumbnail implements ImageTransformInterface
   /**
    * @throws Exception
    */
-  public function getSrc(): string {
-    if (!$this->src) $this->setSrc();
+  public function getSrc(): ?string {
+    if ($this->src === '') $this->setSrc();
     return $this->src;
   }
 

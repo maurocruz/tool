@@ -12,13 +12,9 @@ use SimpleXMLElement;
 abstract class ImageAbstract
 {
   /**
-   *
+   * @var ?string | false
    */
-  const NO_IMAGE = "https://plinct.com.br/App/static/cms/images/noImage.jpg";
-  /**
-   * @var string
-   */
-  protected string $src = '';
+  protected ?string $src = '';
   /**
    * @var ?string
    */
@@ -286,11 +282,7 @@ abstract class ImageAbstract
       if ($this->validate == null) $this->setValidate();
 
       if ($this->remote) {
-          if ($this->validate === false) {
-             $this->source = self::NO_IMAGE;
-          }
           $this->src = $this->source;
-
       } else {
           if (!$this->sourceScheme && $this->validate) {
               $this->src = str_replace($this->docRoot, $this->protocol . "://" . $this->serverHost, $this->pathFile);
