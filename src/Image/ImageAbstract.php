@@ -1,7 +1,5 @@
 <?php
-
 declare(strict_types=1);
-
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -62,7 +60,7 @@ abstract class ImageAbstract
   /**
    * @var bool
    */
-  protected bool $remote = false;
+  protected ?bool $remote = null;
   /**
    * @var ?bool
    */
@@ -148,7 +146,6 @@ abstract class ImageAbstract
   protected function setSizes()
   {
     if (!$this->validate) $this->setValidate();
-
     if ($this->validate === false) {
      $this->setRemote();
      $this->setSizesForRemote();
@@ -168,7 +165,6 @@ abstract class ImageAbstract
 					$exif = exif_read_data($this->pathFile);
 					$this->exifOrientation = $exif['Orientation'] ?? false;
 				}
-
 				switch ($this->exifOrientation) {
 					case 6 :
 						$this->width = (int)$imageSize[1];
@@ -178,15 +174,12 @@ abstract class ImageAbstract
 						$this->width = (int)$imageSize[0];
 						$this->height = (int)$imageSize[1];
 				}
-
         $this->type = $imageSize[2];
         $this->encodingFormat = $imageSize['mime'];
       }
-
       $this->ratio = $this->width / $this->height;
       $this->fileSize = filesize($this->pathFile);
     }
-
   }
 
   /**
@@ -196,19 +189,15 @@ abstract class ImageAbstract
   {
     if ($this->remote) {
       $data = (new Curl($this->source))->getImageData();
-
       $this->validate = $data['validate'];
       if ($data['validate']) {
         $this->fileSize = $data['fileSize'];
         $imageSize = $data['imageSize'];
-
         $this->width = (int)$imageSize[0];
         $this->height = (int)$imageSize[1];
-
         if (is_numeric($imageSize[0])) {
           $this->ratio = $this->width / $this->height;
         }
-
         $this->extension = $imageSize[2];
         $this->encodingFormat = $imageSize['mime'];
       }
@@ -223,13 +212,10 @@ abstract class ImageAbstract
 		if($this->source) {
 			if (!$this->remote) $this->setRemote();
 			if (!$this->pathFile) $this->setPathInfo();
-
 			if ($this->remote) {
 				$this->setSizesForRemote();
-
 			} elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
 				$this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
-
 			} else {
 				$this->validate = false;
 			}
@@ -245,18 +231,14 @@ abstract class ImageAbstract
   {
     if (!$this->remote) $this->setRemote();
     if (!$this->path) $this->setParseUrl();
-
     if ($this->remote) {
       $this->pathFile = $this->source;
-
     } elseif(is_uploaded_file($this->path)) {
       $this->pathFile = $this->path;
-
     } elseif (is_string($this->path)) {
       if (!$this->docRoot) $this->setServerRequests();
       $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
     }
-
     if (is_string($this->path)) {
       $pathInfo = pathinfo($this->path);
       $this->dirname = $pathInfo['dirname'];
@@ -268,9 +250,8 @@ abstract class ImageAbstract
    */
   protected function setRemote()
   {
-      if (!$this->sourceHost) $this->setParseUrl();
-
-      $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
+    if (!$this->sourceHost) $this->setParseUrl();
+    $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
   }
 
   /**
@@ -278,18 +259,17 @@ abstract class ImageAbstract
    */
   protected function setSrc()
   {
-      if ($this->remote == null) $this->setRemote();
-      if ($this->validate == null) $this->setValidate();
-
-      if ($this->remote) {
-          $this->src = $this->source;
+    if ($this->remote == null) $this->setRemote();
+    if ($this->validate == null) $this->setValidate();
+    if ($this->remote) {
+      $this->src = $this->source;
+    } else {
+      if (!$this->sourceScheme && $this->validate) {
+        $this->src = str_replace($this->docRoot, $this->protocol . "://" . $this->serverHost, $this->pathFile);
       } else {
-          if (!$this->sourceScheme && $this->validate) {
-              $this->src = str_replace($this->docRoot, $this->protocol . "://" . $this->serverHost, $this->pathFile);
-          } else {
-              $this->src = $this->source;
-          }
+        $this->src = $this->source;
       }
+    }
   }
 
   /**
@@ -297,8 +277,8 @@ abstract class ImageAbstract
    */
   protected function getValidate(): bool
   {
-      if($this->validate === null) $this->setValidate();
-      return $this->validate;
+    if($this->validate === null) $this->setValidate();
+    return $this->validate;
   }
 
   /**
@@ -315,13 +295,14 @@ abstract class ImageAbstract
    */
   protected function setTemporaryImage()
   {
-    if (!$this->imageTrueColor) $this->setTrueColorImage();
-
+    if (!is_resource($this->imageTrueColor)) {
+			$this->setTrueColorImage();
+    }
     switch ($this->type) {
-      case '1':
+      case '1': // GIF
         $this->imageTemporary = imagecreatefromgif($this->pathFile);
         break;
-      case '2':
+      case '2': // JPG
 	      $this->imageTemporary = imagecreatefromjpeg($this->pathFile);
 	      break;
 	    case '3': // PNG
@@ -330,7 +311,6 @@ abstract class ImageAbstract
         imagesavealpha($this->imageTrueColor, true);
         break;
     }
-
 		switch ($this->exifOrientation) {
 			case 3:
 				$this->imageTemporary = imagerotate($this->imageTemporary, -180, 000000);
@@ -347,10 +327,8 @@ abstract class ImageAbstract
   protected function saveToFile(string $destinationFile)
   {
     FileSystem::makeDirectory(dirname($destinationFile), 0777, true);
-
     $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
     $pathfile = strpos($destinationFile, $docroot) !== false ? $destinationFile : $docroot . $destinationFile;
-
     switch ($this->type) {
       case '1':
         imagegif($this->imageTrueColor, $pathfile);
@@ -362,7 +340,6 @@ abstract class ImageAbstract
         imagepng($this->imageTrueColor, $pathfile);
         break;
     }
-
     imagedestroy($this->imageTrueColor);
   }
 }

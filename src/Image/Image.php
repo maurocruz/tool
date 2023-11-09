@@ -1,7 +1,5 @@
 <?php
-
 declare(strict_types=1);
-
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -34,11 +32,9 @@ class Image extends Thumbnail implements ImageTransformInterface
   {
     if (!$this->width) parent::setSizes();
     parent::setNewSizes($width, $height);
-
 		if ($this->validate && !parent::thumbIfExists()) {
 			parent::setTemporaryImage();
 			if ($this->imageTemporary) parent::copyResizedImage();
-
 			if (isset(pathinfo($this->source)['extension'])) {
 				parent::saveToFile($this->thumbPath);
 			}
@@ -150,4 +146,9 @@ class Image extends Thumbnail implements ImageTransformInterface
   public function isValidImage(): bool {
     return $this->getValidate();
   }
+
+	public function isRemote(): bool {
+		$this->setRemote();
+		return $this->remote;
+	}
 }
