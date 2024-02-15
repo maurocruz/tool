@@ -1,12 +1,11 @@
 <?php
-
 declare(strict_types=1);
-
 namespace Plinct\Tool;
 
 use Exception;
 use Plinct\Tool\DateTime\DateTimeInterface;
 use Plinct\Tool\Image\Image;
+use Plinct\Tool\Logger\Logger;
 use Plinct\Tool\StructuredData\v1\StructuredData;
 use Plinct\Tool\Curl\v1\Curl;
 
@@ -19,6 +18,16 @@ class ToolBox
 	public static function dateTime(string $datetime = null): DateTimeInterface
 	{
 		return new \Plinct\Tool\DateTime\DateTime($datetime);
+	}
+
+	/**
+	 * @param ?string $channel
+	 * @param ?string $filename
+	 * @return Logger
+	 */
+	public static function Logger(?string $channel, ?string $filename): Logger
+	{
+		return new Logger($channel, $filename);
 	}
 
   /**

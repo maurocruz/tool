@@ -79,21 +79,31 @@ class FileSystem
   public function uploadFiles(array $files): array
   {
 		$returns = [];
-		foreach ($files['error'] as $key => $error) {
-			$name = $files['name'][$key];
-			$tmpName = $files['tmp_name'][$key];
-			$type = $files['type'][$key];
-			if ($error == UPLOAD_ERR_OK) {
-				$destinationFile = $this->destinationFile($name, $type);
-				if(move_uploaded_file($tmpName,$destinationFile)) {
-					$returns[] = ['status'=>'successs','message'=>'File uploaded', 'data'=> $destinationFile];
-				} else {
-					$returns[] = ['status'=> 'fail','message'=>"File not Uploaded: '".$name."'"];
-				}
+		if (is_array($files['error'])) {
+			foreach ($files['error'] as $key => $error) {
+				$name = $files['name'][$key];
+				$tmpName = $files['tmp_name'][$key];
+				$type = $files['type'][$key];
+				$returns[] = $this->move_filesUploaded($name, $tmpName, $type, $error);
 			}
+	  } else {
+			$returns[] = $this->move_filesUploaded($files['name'], $files['tmp_name'], $files['type'], $files['error'] );
 		}
 		return $returns;
   }
+
+	private function move_filesUploaded(string $name, string $tmpName, string $type, int $error ): array
+	{
+		if ($error == UPLOAD_ERR_OK) {
+			$destinationFile = $this->destinationFile($name, $type);
+			if (move_uploaded_file($tmpName, $destinationFile)) {
+				return ['status' => 'successs', 'message' => 'File uploaded', 'data' => $destinationFile];
+			} else {
+				return ['status' => 'fail', 'message' => "File not Uploaded: '" . $name . "'"];
+			}
+		}
+		return [];
+	}
 
 	/**
 	 * @param string $name

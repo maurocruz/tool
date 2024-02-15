@@ -100,13 +100,13 @@ class Curl
   }
 
 	/**
-	 * @param array $params
+	 * @param array|null $params
 	 * @return $this
 	 */
-	public function get(array $params): Curl {
+	public function get(array $params = null): Curl {
 		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "GET");
-		curl_setopt($this->handle, CURLOPT_URL, $this->url."?".http_build_query($params));
+		if ($params) curl_setopt($this->handle, CURLOPT_URL, $this->url."?".http_build_query($params));
 		return $this;
 	}
 
@@ -174,23 +174,19 @@ class Curl
   /**
    * @return string
    */
-  public function ready(): string
-  {
+  public function ready(): string {
     if ($this->headers) {
       curl_setopt($this->handle, CURLOPT_HTTPHEADER, $this->headers);
     }
     // for localhost
     if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
-
     if (!$this->exec) $this->execute();
-
     if (curl_error($this->handle) !== '' && $this->exec === false) {
       $return  = curl_error($this->handle);
-    } else {
+    } else if (is_string($this->exec)) {
       $return = $this->exec;
     }
     curl_close($this->handle);
-
-    return $return;
+    return $return ?? '';
   }
 }
