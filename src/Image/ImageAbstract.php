@@ -215,7 +215,8 @@ abstract class ImageAbstract
 			if ($this->remote) {
 				$this->setSizesForRemote();
 			} elseif (is_file($this->pathFile) && is_readable($this->pathFile)) {
-				$this->validate = strstr(mime_content_type($this->pathFile), "/", true) == "image";
+				$mime = mime_content_type($this->pathFile);
+				$this->validate = $mime && strstr($mime, "/", true) == "image";
 			} else {
 				$this->validate = false;
 			}
