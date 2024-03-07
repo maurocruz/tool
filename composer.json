@@ -15,7 +15,8 @@
       "ext-exif": "*",
       "ext-simplexml": "*",
       "ext-fileinfo": "*",
-      "ext-dom": "*"
+      "ext-dom": "*",
+      "ext-intl": "*"
     },
     "require-dev": {
       "ext-json": "*",
