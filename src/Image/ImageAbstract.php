@@ -29,6 +29,8 @@ abstract class ImageAbstract
    * @var string
    */
   protected string $dirname = '';
+
+	protected string $basename = '';
   /**
    * @var ?string
    */
@@ -242,6 +244,7 @@ abstract class ImageAbstract
     if (is_string($this->path)) {
       $pathInfo = pathinfo($this->path);
       $this->dirname = $pathInfo['dirname'];
+      $this->basename = $pathInfo['basename'];
     }
   }
 

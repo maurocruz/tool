@@ -140,6 +140,25 @@ class Image extends Thumbnail implements ImageTransformInterface
 		return $this->extension;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getBasename(): string
+	{
+		return $this->basename;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPathFile(): string
+	{
+		if($this->pathFile === '') {
+			$this->setPathInfo();
+		}
+		return $this->pathFile;
+	}
+
   /**
    * @throws Exception
    */

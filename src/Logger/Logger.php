@@ -5,14 +5,11 @@ namespace Plinct\Tool\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger as Monolog;
-use Monolog\Processor\ProcessIdProcessor;
-use Monolog\Processor\ProcessorInterface;
 
 class Logger {
 	private string $channel = 'general';
 	private string $pathfile = 'logs.log';
 	private Level $level = Level::Debug;
-	private ?ProcessIdProcessor $processor = null;
 
 	public function __construct(?string $channel, ?string $pathfile)
 	{
@@ -40,68 +37,90 @@ class Logger {
 	/**
 	 * @param string $message
 	 * @param array $context
-	 * @param ProcessorInterface|null $processor
 	 * @return void
 	 */
-	public function info(string $message, array $context = [], ProcessorInterface $processor = null)
+	public function debug(string $message, array $context = [])
+	{
+		$this->level = Level::Debug;
+		$this->write($message, $context);
+	}
+
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @return void
+	 */
+	public function info(string $message, array $context = [])
 	{
 		$this->level = Level::Info;
-		$this->processor = $processor;
 		$this->write($message, $context);
 	}
 
 	/**
 	 * @param string $message
 	 * @param array $context
-	 * @param ProcessorInterface|null $processor
 	 * @return void
 	 */
-	public function notice(string $message, array $context = [], ProcessorInterface $processor = null)
+	public function notice(string $message, array $context = [])
 	{
 		$this->level = Level::Notice;
-		$this->processor = $processor;
 		$this->write($message, $context);
 	}
 
 	/**
 	 * @param string $message
 	 * @param array $context
-	 * @param ProcessorInterface|null $processor
 	 * @return void
 	 */
-	public function warning(string $message, array $context = [], ProcessorInterface $processor = null)
+	public function warning(string $message, array $context = [])
 	{
 		$this->level = Level::Warning;
-		$this->processor = $processor;
 		$this->write($message, $context);
 	}
 
 	/**
 	 * @param string $message
 	 * @param array $context
-	 * @param ProcessorInterface|null $processor
 	 * @return void
 	 */
-	public function error(string $message, array $context = [], ProcessorInterface $processor = null)
+	public function error(string $message, array $context = [])
 	{
 		$this->level = Level::Error;
-		$this->processor = $processor;
 		$this->write($message, $context);
 	}
 
 	/**
 	 * @param string $message
 	 * @param array $context
-	 * @param ProcessorInterface|null $processor
 	 * @return void
 	 */
-	public function critical(string $message, array $context = [], ProcessorInterface $processor = null)
+	public function critical(string $message, array $context = [])
 	{
 		$this->level = Level::Critical;
-		$this->processor = $processor;
 		$this->write($message, $context);
 	}
 
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @return void
+	 */
+	public function alert(string $message, array $context = [])
+	{
+		$this->level = Level::Alert;
+		$this->write($message, $context);
+	}
+
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @return void
+	 */
+	public function emergency(string $message, array $context = [])
+	{
+		$this->level = Level::Emergency;
+		$this->write($message, $context);
+	}
 	/**
 	 * @param string $message
 	 * @param array $context
@@ -111,15 +130,15 @@ class Logger {
 	{
 		$monolog = new Monolog($this->channel);
 		$monolog->pushHandler(new StreamHandler($this->pathfile, $this->level));
-		if ($this->processor) {
-			$monolog->pushProcessor($this->processor);
-		}
 		switch ($this->level) {
+			case Level::Debug: $monolog->debug($message, $context); break;
 			case Level::Info: $monolog->info($message, $context); break;
 			case Level::Notice: $monolog->notice($message, $context); break;
 			case Level::Warning: $monolog->warning($message, $context); break;
 			case Level::Error: $monolog->error($message, $context); break;
 			case Level::Critical: $monolog->critical($message, $context); break;
+			case Level::Alert: $monolog->alert($message, $context); break;
+			case Level::Emergency: $monolog->emergency($message, $context); break;
 		}
 	}
 }

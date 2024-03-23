@@ -1,7 +1,5 @@
 <?php
-
 declare(strict_types=1);
-
 namespace Plinct\Tool\FileSystem;
 
 use Directory;
@@ -92,17 +90,50 @@ class FileSystem
 		return $returns;
   }
 
+	/**
+	 * @param string $name
+	 * @param string $tmpName
+	 * @param string $type
+	 * @param int $error
+	 * @return array|string[]
+	 */
 	private function move_filesUploaded(string $name, string $tmpName, string $type, int $error ): array
 	{
 		if ($error == UPLOAD_ERR_OK) {
 			$destinationFile = $this->destinationFile($name, $type);
 			if (move_uploaded_file($tmpName, $destinationFile)) {
-				return ['status' => 'successs', 'message' => 'File uploaded', 'data' => $destinationFile];
+				return ['status' => 'success', 'message' => 'File uploaded', 'data' => $destinationFile];
 			} else {
 				return ['status' => 'fail', 'message' => "File not Uploaded: '" . $name . "'"];
 			}
+		} else {
+			switch ($error) {
+				case UPLOAD_ERR_INI_SIZE:
+					$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+					break;
+				case UPLOAD_ERR_FORM_SIZE:
+					$message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+					break;
+				case UPLOAD_ERR_PARTIAL:
+					$message = "The uploaded file was only partially uploaded.";
+					break;
+				case UPLOAD_ERR_NO_FILE:
+					$message = "No file was uploaded.";
+					break;
+				case UPLOAD_ERR_NO_TMP_DIR:
+					$message = "Missing a temporary folder.";
+					break;
+				case UPLOAD_ERR_CANT_WRITE:
+					$message = "Failed to write file to disk.";
+					break;
+				case UPLOAD_ERR_EXTENSION:
+					$message = "A PHP extension stopped the file upload. PHP does not provide a way to ascertain which extension caused the file upload to stop; examining the list of loaded extensions with phpinfo() may help.";
+					break;
+				default:
+					$message = "An error not identified occurred";
+			}
+			return ['status'=>'error', 'message' => $message ];
 		}
-		return [];
 	}
 
 	/**
@@ -140,7 +171,7 @@ class FileSystem
 	 */
   public static function listDirectories(string $directory): array
   {
-    $response = false;
+    $response = [];
     $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
     if (substr($directory,-1) !== "/") $directory .= "/";
     $directoryPath =  $docroot . $directory;
