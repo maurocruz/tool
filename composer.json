@@ -10,6 +10,7 @@
     ],
     "require": {
       "php": "^7.4|^8.0",
+      "monolog/monolog": "3.*",
       "ext-curl": "*",
       "ext-gd": "*",
       "ext-exif": "*",
