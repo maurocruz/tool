@@ -14,14 +14,12 @@ class Curl
    * @var array|null
    */
   private ?array $headers = null;
-  /**
-   * @var bool|string
-   */
-  private $exec = false;
 	/**
 	 * @var string
 	 */
 	private string $url;
+
+	private $info;
 
   /**
    *
@@ -42,14 +40,6 @@ class Curl
 		return $this;
 	}
 
-	/**
-	 * @return array|null
-	 */
-	public function getHeaders(): ?array
-	{
-		return $this->headers;
-	}
-
   /**
    * @param string $url
    * @return $this
@@ -62,12 +52,11 @@ class Curl
   }
 
   /**
-   * @return mixed
+   * @return false|resource
    */
   public function getInfo()
   {
-    if (!$this->exec) $this->execute();
-    return curl_getinfo($this->handle);
+    return $this->info;
   }
 
   /**
@@ -164,14 +153,6 @@ class Curl
 	}
 
   /**
-   *
-   */
-  private function execute(): void
-  {
-    $this->exec = curl_exec($this->handle);
-  }
-
-  /**
    * @return string
    */
   public function ready(): string {
@@ -180,13 +161,19 @@ class Curl
     }
     // for localhost
     if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
-    if (!$this->exec) $this->execute();
-    if (curl_error($this->handle) !== '' && $this->exec === false) {
+		// execute
+	  $exec = curl_exec($this->handle);
+		// get info
+		$this->info = curl_getinfo($this->handle);
+		// returns
+    if (curl_error($this->handle) !== '' && $exec === false) {
       $return  = curl_error($this->handle);
-    } else if (is_string($this->exec)) {
-      $return = $this->exec;
+    } else if (is_string($exec)) {
+      $return = $exec;
     }
+		// close
     curl_close($this->handle);
+		//
     return $return ?? '';
   }
 }
