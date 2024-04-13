@@ -40,6 +40,14 @@ class ToolBox
   }
 
 	/**
+	 * @param array $value
+	 * @return TypeBuilder
+	 */
+	public static function typeBuilder(array $value): TypeBuilder
+	{
+		return new TypeBuilder($value);
+	}
+	/**
 	 * @param string $url
 	 * @return Curl
 	 */
