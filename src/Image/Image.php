@@ -22,6 +22,23 @@ class Image extends Thumbnail implements ImageTransformInterface
     if($this->source) $this->setExtension();
   }
 
+	/**
+	 * @throws Exception
+	 */
+	public function createNewImage(string $destination, int $width, $height = null): string
+	{
+		if (!$this->width) {
+			parent::setSizes();
+		}
+		parent::setNewSizes($width, $height);
+		if ($this->validate) {
+			parent::setTemporaryImage();
+			parent::copyResizedImage();
+			parent::saveToFile($destination);
+		}
+		return $destination;
+	}
+
   /**
    * @param $width
    * @param null $height

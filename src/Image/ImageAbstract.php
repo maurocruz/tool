@@ -164,7 +164,7 @@ abstract class ImageAbstract
       } else {
         $imageSize = getimagesize($this->pathFile);
 				if ($this->extension !== 'png' && $this->extension !== "gif") {
-					$exif = exif_read_data($this->pathFile);
+					$exif = @exif_read_data($this->pathFile);
 					$this->exifOrientation = $exif['Orientation'] ?? false;
 				}
 				switch ($this->exifOrientation) {
@@ -314,6 +314,9 @@ abstract class ImageAbstract
         imagealphablending($this->imageTrueColor, false);
         imagesavealpha($this->imageTrueColor, true);
         break;
+	    case '18':
+				$this->imageTemporary = imagecreatefromwebp($this->pathFile);
+				break;
     }
 		switch ($this->exifOrientation) {
 			case 3:
@@ -338,11 +341,13 @@ abstract class ImageAbstract
         imagegif($this->imageTrueColor, $pathfile);
         break;
       case '2':
-				imagewebp($this->imageTrueColor, $pathfile);
+				imagejpeg($this->imageTrueColor, $pathfile);
         break;
       case '3':
         imagepng($this->imageTrueColor, $pathfile);
         break;
+	    case '18':
+				imagewebp($this->imageTrueColor, $pathfile);
     }
     imagedestroy($this->imageTrueColor);
   }

@@ -107,34 +107,35 @@ class FileSystem
 				return ['status' => 'fail', 'message' => "File not Uploaded: '" . $name . "'"];
 			}
 		} else {
-			switch ($error) {
-				case UPLOAD_ERR_INI_SIZE:
-					$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
-					break;
-				case UPLOAD_ERR_FORM_SIZE:
-					$message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
-					break;
-				case UPLOAD_ERR_PARTIAL:
-					$message = "The uploaded file was only partially uploaded.";
-					break;
-				case UPLOAD_ERR_NO_FILE:
-					$message = "No file was uploaded.";
-					break;
-				case UPLOAD_ERR_NO_TMP_DIR:
-					$message = "Missing a temporary folder.";
-					break;
-				case UPLOAD_ERR_CANT_WRITE:
-					$message = "Failed to write file to disk.";
-					break;
-				case UPLOAD_ERR_EXTENSION:
-					$message = "A PHP extension stopped the file upload. PHP does not provide a way to ascertain which extension caused the file upload to stop; examining the list of loaded extensions with phpinfo() may help.";
-					break;
-				default:
-					$message = "An error not identified occurred";
-			}
-			return ['status'=>'error', 'message' => $message ];
+			return ['status'=>'error', 'message' => self::returnMessageError($error) ];
 		}
 	}
+
+	/**
+	 * @param int $error
+	 * @return string
+	 */
+  public static function returnMessageError(int $error): string
+  {
+	  switch ($error) {
+		  case UPLOAD_ERR_INI_SIZE:
+			  return "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+		  case UPLOAD_ERR_FORM_SIZE:
+			  return "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+		  case UPLOAD_ERR_PARTIAL:
+			  return "The uploaded file was only partially uploaded.";
+		  case UPLOAD_ERR_NO_FILE:
+			  return "No file was uploaded.";
+		  case UPLOAD_ERR_NO_TMP_DIR:
+			  return "Missing a temporary folder.";
+		  case UPLOAD_ERR_CANT_WRITE:
+			  return "Failed to write file to disk.";
+		  case UPLOAD_ERR_EXTENSION:
+			  return "A PHP extension stopped the file upload. PHP does not provide a way to ascertain which extension caused the file upload to stop; examining the list of loaded extensions with phpinfo() may help.";
+		  default:
+			  return "An error not identified occurred";
+	  }
+  }
 
 	/**
 	 * @param string $name
