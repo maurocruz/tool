@@ -36,7 +36,7 @@ class Image extends Thumbnail implements ImageTransformInterface
 			parent::copyResizedImage();
 			parent::saveToFile($destination);
 		}
-		return $destination;
+		return $this->protocol."://".$this->serverHost.$destination;
 	}
 
   /**
