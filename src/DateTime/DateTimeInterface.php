@@ -7,6 +7,17 @@ namespace Plinct\Tool\DateTime;
 interface DateTimeInterface
 {
 	/**
+	 * @param string $expression
+	 * @return string
+	 */
+	public function format(string $expression): string;
+
+	/**
+	 * @return string
+	 */
+	public function getYear(): string;
+
+	/**
 	 * @return string
 	 */
 	public function getDay(): string;

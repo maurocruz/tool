@@ -41,6 +41,10 @@ class DateTime implements DateTimeInterface
 	 */
 	private string $weekday;
 
+	/**
+	 * @param $date
+	 * @param $timezone
+	 */
 	public function __construct($date, $timezone = NULL)
 	{
 		try {
@@ -57,6 +61,23 @@ class DateTime implements DateTimeInterface
 		} catch (Exception $e) {
 
 		}
+	}
+
+	/**
+	 * @param string $expression
+	 * @return string
+	 */
+	public function format(string $expression): string
+	{
+		return date_format($this->datetime, $expression);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getYear(): string
+	{
+		return $this->year;
 	}
 
 	/**
@@ -105,11 +126,6 @@ class DateTime implements DateTimeInterface
 	public function getSecond(): string
 	{
 		return $this->second;
-	}
-
-	public function format(string $expression)
-	{
-		return date_format($this->datetime, $expression);
 	}
 	/**
 	 * @param $month
@@ -171,10 +187,10 @@ class DateTime implements DateTimeInterface
 	public function readyDateTimeWithLiteral(): string
 	{
 		$date = date_format($this->datetime, "d/m/Y");
-		if ($this->getHour() != false) {
+		if ($this->getHour()) {
 			$date .= " às " . (int)$this->getHour() . "h";
-			$date .= (int)$this->getMinute() != false ? (int)$this->getMinute() : null;
-			$date .= (int)$this->getSecond() != false ? 'm'.(int)$this->getSecond() : null;
+			$date .= (int)$this->getMinute() ?? null;
+			$date .= (int)$this->getSecond() ? 'm'.(int)$this->getSecond() : null;
 		}
 		return $date;
 

@@ -144,28 +144,7 @@ class DateTime {
      * @return string|null
      */
     public static function translateWeekday($weekday, $abrev = NULL): ?string {
-        if ($abrev) {
-            switch ($weekday) { 
-                case "1": return "seg"; 
-                case "2": return "ter";  
-                case "3": return "qua"; 
-                case "4": return "qui"; 
-                case "5": return "sex";  
-                case "6": return "sáb"; 
-                case "7": return "dom";
-            }
-        } else {
-            switch ($weekday) { 
-                case "1": return "segunda"; 
-                case "2": return "terça";  
-                case "3": return "quarta"; 
-                case "4": return "quinta"; 
-                case "5": return "sexta";  
-                case "6": return "sábado"; 
-                case "7": return "domingo";
-            }
-        }
-        return null;
+			return ToolBox::dateTime()->translateWeekday($weekday, $abrev);
     }
 
     /**
@@ -173,21 +152,7 @@ class DateTime {
      * @return string|null
      */
     public static function translateMonth($month): ?string {
-        switch ($month) { 
-            case "1": return "janeiro"; 
-            case "2": return "fevereiro";  
-            case "3": return "março"; 
-            case "4": return "abril"; 
-            case "5": return "maio";  
-            case "6": return "junho"; 
-            case "7": return "julho";
-            case "8": return "agosto";
-            case "9": return "setembro";
-            case "10": return "outubro";
-            case "11": return "novembro";
-            case "12": return "dezembro";
-        }
-        return null;
+			return ToolBox::dateTime()->translateMonth($month);
     }
 
     /**
