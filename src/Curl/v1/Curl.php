@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Plinct\Tool\Curl\v1;
 
+use Plinct\Tool\Logger\Logger;
+
 class Curl
 {
   /**
@@ -21,6 +23,10 @@ class Curl
 
 	private $info;
 
+	private string $method;
+
+	private array $params;
+
   /**
    *
    */
@@ -28,6 +34,7 @@ class Curl
   {
 		$this->url = $url;
     $this->handle = curl_init($url);
+	  curl_setopt($this->handle, CURLOPT_VERBOSE, true);
   }
 
 	/**
@@ -93,6 +100,8 @@ class Curl
 	 * @return $this
 	 */
 	public function get(array $params = null): Curl {
+		$this->method = "get";
+		$this->params = $params;
 		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "GET");
 		if ($params) curl_setopt($this->handle, CURLOPT_URL, $this->url."?".http_build_query($params));
@@ -106,6 +115,8 @@ class Curl
 	 */
 	public function post(array $params, array $FILES = null ): Curl
 	{
+		$this->method = "post";
+		$this->params = $params;
 		if ($FILES) {
 			foreach ($FILES as $key => $value) {
 				foreach ($value['error'] as $index => $error) {
@@ -134,6 +145,8 @@ class Curl
 	 * @return $this
 	 */
 	public function put($data): Curl {
+		$this->method = "put";
+		$this->params = $data;
 		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "PUT");
 		curl_setopt($this->handle, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -146,6 +159,8 @@ class Curl
   */
 	public function delete($params): Curl
 	{
+		$this->method = "delete";
+		$this->params = $params;
 		curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, "DELETE");
 		curl_setopt($this->handle, CURLOPT_URL, $this->url."?".http_build_query($params));
@@ -163,8 +178,12 @@ class Curl
     if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") $this->connectWithLocalhost();
 		// execute
 	  $exec = curl_exec($this->handle);
-		// get info
-		$this->info = curl_getinfo($this->handle);
+	  $logger = new Logger('curl', __DIR__.'/log/log.log');
+	  // get info
+	  $this->info = curl_getinfo($this->handle);
+		if (curl_errno($this->handle)) {
+			$logger->error("Curl error", [curl_error($this->handle)]);
+		}
 		// returns
     if (curl_error($this->handle) !== '' && $exec === false) {
       $return  = curl_error($this->handle);
