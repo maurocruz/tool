@@ -30,6 +30,17 @@ class ToolBox
 		return new Logger($channel, $filename);
 	}
 
+	/**
+	 * @param string $sitename
+	 * @param string $representativeImage
+	 * @param string $url
+	 * @return OpenGraph
+	 */
+	public static function OpenGraph(string $sitename, string $representativeImage, string $url): OpenGraph
+	{
+		return new OpenGraph($sitename, $representativeImage, $url);
+	}
+
   /**
    * @param $data
    * @return StructuredData
