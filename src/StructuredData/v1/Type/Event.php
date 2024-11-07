@@ -17,6 +17,7 @@ class Event extends StructuredDataTypeAbstract
 	 */
   public function parse(): array
   {
+		$location = $this->data['location'] ?? null;
 		// DATES
 	  // start date format
 	  if (substr($this->data['startDate'],11) == "00:00:00") {
@@ -37,7 +38,9 @@ class Event extends StructuredDataTypeAbstract
     $this->newData['endDate'] = $endDate;
 
 		// LOCATION
-    if (isset($this->data['location'])) $this->newData['location'] = (new Place($this->data['location']))->parse();
+	  if ($location && is_array($location)) {
+		  if (isset($this->data['location'])) $this->newData['location'] = (new Place($this->data['location']))->parse();
+	  }
 		// IMAGE
 	  if (isset($this->data['image']) && !empty($this->data['image'])) {
 			foreach ($this->data['image'] as $value) {

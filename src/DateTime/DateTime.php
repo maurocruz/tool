@@ -47,19 +47,20 @@ class DateTime implements DateTimeInterface
 	 */
 	public function __construct($date, $timezone = NULL)
 	{
-		try {
-			$datetime = new \DateTime($date, $timezone);
-			$this->year = $datetime->format("Y");
-			$this->month = $datetime->format("n");
-			$this->day = $datetime->format("d");
-			$this->hour = $datetime->format("H");
-			$this->minute = $datetime->format("i");
-			$this->second = $datetime->format("s");
-			$this->weekday = $datetime->format("N");
-			$this->datetime = $datetime;
+		if ($date) {
+			try {
+				$datetime = new \DateTime($date, $timezone);
+				$this->year = $datetime->format("Y");
+				$this->month = $datetime->format("n");
+				$this->day = $datetime->format("d");
+				$this->hour = $datetime->format("H");
+				$this->minute = $datetime->format("i");
+				$this->second = $datetime->format("s");
+				$this->weekday = $datetime->format("N");
+				$this->datetime = $datetime;
+			} catch (Exception $e) {
 
-		} catch (Exception $e) {
-
+			}
 		}
 	}
 
