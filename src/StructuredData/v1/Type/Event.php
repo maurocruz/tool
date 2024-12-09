@@ -1,13 +1,9 @@
 <?php
-
-declare(strict_types=1);
-
 namespace Plinct\Tool\StructuredData\v1\Type;
 
 use DateTime;
 use DateTimeInterface;
 use Exception;
-use Plinct\Web\Debug\Debug;
 
 class Event extends StructuredDataTypeAbstract
 {

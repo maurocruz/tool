@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 namespace Plinct\Tool\StructuredData\v1\Type;
 
 class Place extends StructuredDataTypeAbstract
@@ -11,16 +8,19 @@ class Place extends StructuredDataTypeAbstract
    */
   public function parse(): array
   {
+		$longitude = $this->data['geo']['longitude'];
+		$latitude = $this->data['geo']['latitude'];
+		$address = $this->data['geo']['address'];
 	  // GEO COORDINATES
-    if ($this->data['longitude'] && $this->data['latitude']) {
+    if ($longitude && $latitude) {
 			$this->newData['geo'] = [
-				'@type'=>'GeoCoordinates',
-				'latitude'=>(float)$this->data['latitude'],
-				'longitude'=>(float)$this->data['longitude']
+				'@type' => 'GeoCoordinates',
+				'latitude' => (float) $latitude,
+				'longitude' => (float) $longitude
 			];
     }
 		// ADDRESS
-    $this->newData['address'] = $this->data['address'] ? (new PostalAddress($this->data['address']))->parse() : null;
+    $this->newData['address'] = $address ? (new PostalAddress($address))->parse() : null;
 		// NEW DATA
     return $this->newData;
   }

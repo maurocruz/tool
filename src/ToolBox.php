@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace Plinct\Tool;
 
 use Exception;
@@ -41,10 +40,11 @@ class ToolBox
 		return new OpenGraph($sitename, $representativeImage, $url);
 	}
 
-  /**
-   * @param $data
-   * @return StructuredData
-   */
+	/**
+	 * @param $data
+	 * @return StructuredData
+	 * @throws Exception
+	 */
   public static function StructuredData($data): StructuredData
   {
     return new StructuredData($data);
