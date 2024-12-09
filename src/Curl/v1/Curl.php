@@ -109,14 +109,13 @@ class Curl
 	}
 
 	/**
-	 * @param array $params
+	 * @param $params
 	 * @param array|null $FILES
 	 * @return $this
 	 */
-	public function post(array $params, array $FILES = null ): Curl
+	public function post($params, array $FILES = null ): Curl
 	{
 		$this->method = "post";
-		$this->params = $params;
 		if ($FILES) {
 			foreach ($FILES as $key => $value) {
 				foreach ($value['error'] as $index => $error) {
@@ -129,7 +128,6 @@ class Curl
 					}
 				}
 			}
-
 			$this->setHeaders('Content-Type: multipart/form-data');
 			$this->setHeaders('User-Agent: '.$_SERVER['HTTP_USER_AGENT']);
 		}
