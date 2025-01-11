@@ -200,7 +200,7 @@ class Curl
 	 * @param bool|resource $handle
 	 * @return bool|string
 	 */
-	private static function execute(bool $handle)
+	private static function execute($handle)
 	{
 		if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == "::1") {
 			curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
