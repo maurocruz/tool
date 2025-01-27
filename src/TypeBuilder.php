@@ -8,26 +8,26 @@ class TypeBuilder
 	 */
 	private array $data;
 	/**
-	 * @var string
+	 * @var ?string
 	 */
-	private string $idname;
+	private ?string $idname;
 	/**
 	 * @var mixed
 	 */
-	private $identifier;
+	private ?array $identifier;
 	/**
 	 * @var string|mixed|null
 	 */
-	private string $type;
+	private ?string $type;
 
 	/**
 	 * @param array $value
 	 */
 	public function __construct(array $value) {
 		$this->type = $value['@type'] ?? null;
-		$this->idname = "id".lcfirst($this->type);
+		$this->idname = $this->type ? "id".lcfirst($this->type) : null;
 		$this->data = $value;
-		$this->identifier = $value['identifier'];
+		$this->identifier = $value['identifier'] ?? null;
 	}
 
 	/**
@@ -60,15 +60,17 @@ class TypeBuilder
 	}
 
 	/**
-	 * @param string $property
+	 * @param ?string $property
 	 * @return false|mixed
 	 */
-	public function getPropertyValue(string $property)	{
-		foreach ($this->identifier as $propertyValue) {
-			if ($propertyValue['name'] === $property) {
-				return $propertyValue['value'];
+	public function getPropertyValue(?string $property)	{
+		if ($this->identifier) {
+			foreach ($this->identifier as $propertyValue) {
+				if ($propertyValue['name'] === $property) {
+					return $propertyValue['value'];
+				}
 			}
 		}
-		return false;
+		return null;
 	}
 }

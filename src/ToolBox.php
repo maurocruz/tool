@@ -2,6 +2,7 @@
 namespace Plinct\Tool;
 
 use Exception;
+use NumberFormatter;
 use Plinct\Tool\DateTime\DateTimeInterface;
 use Plinct\Tool\Image\Image;
 use Plinct\Tool\Logger\Logger;
@@ -10,6 +11,21 @@ use Plinct\Tool\Curl\v1\Curl;
 
 class ToolBox
 {
+	public static function currencies(): array
+	{
+		$currencies = [];
+		$curl = new Curl('https://restcountries.com/v3.1/all?fields=currencies');
+		$data = json_decode($curl->returnWithJson()->ready(), true);
+		foreach ($data as $item) {
+			$currency = $item['currencies'];
+			$key = array_key_first($currency);
+			if ($key !== null) {
+				$currencies[$key] = array_key_first($currency) .', '. $currency[$key]['name'].', '.$currency[$key]['symbol'];
+			}
+		}
+		sort($currencies);
+		return $currencies;
+	}
 	/**
 	 * @param string|null $datetime
 	 * @return DateTimeInterface
@@ -27,6 +43,15 @@ class ToolBox
 	public static function Logger(?string $channel, ?string $filename): Logger
 	{
 		return new Logger($channel, $filename);
+	}
+
+	/**
+	 * @param string $locale
+	 * @return NumberFormatter
+	 */
+	public static function NumberFormatterCurrency(string $locale = 'pt_BR'): NumberFormatter
+	{
+		return 	new NumberFormatter('pt_BR', NumberFormatter::CURRENCY);
 	}
 
 	/**
