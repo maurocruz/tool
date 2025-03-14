@@ -76,10 +76,10 @@ class ToolBox
   }
 
 	/**
-	 * @param array $value
+	 * @param array|int|null $value
 	 * @return TypeBuilder
 	 */
-	public static function typeBuilder(array $value): TypeBuilder
+	public static function typeBuilder(array|null|int $value): TypeBuilder
 	{
 		return new TypeBuilder($value);
 	}
@@ -98,7 +98,7 @@ class ToolBox
 	 * @return null|array|string
 	 * @throws Exception
 	 */
-  public static function getRepresentativeImageOfPage($data, string $mode = "string")
+  public static function getRepresentativeImageOfPage($data, string $mode = "string"): array|string|null
   {
 		$returnImage = null;
 
@@ -143,7 +143,7 @@ class ToolBox
  * @param string|null $propertyName
  * @return array|false|mixed
  */
-  public static function searchByValue(array $array, string $valueName, string $propertyName = null)
+  public static function searchByValue(array $array, string $valueName, string $propertyName = null): mixed
   {
     return ArrayTool::searchByValue($array, $valueName, $propertyName);
   }
