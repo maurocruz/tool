@@ -147,4 +147,25 @@ class ToolBox
   {
     return ArrayTool::searchByValue($array, $valueName, $propertyName);
   }
+
+	/**
+	 * @param string|null $telephoneNumber
+	 * @return array|string|null
+	 */
+	public function telephoneFormatter(?string $telephoneNumber): array|string|null
+	{
+		if ($telephoneNumber == null) return null;
+		// Remove tudo que não é número
+		$telephoneNumber = preg_replace('/\D+/', '', $telephoneNumber);
+		// 9 dígitos (celular): 2 DDD + 9 + 4
+		if (preg_match('/^(\d{2})(\d{5})(\d{4})$/', $telephoneNumber)) {
+			return preg_replace('/^(\d{2})(\d{5})(\d{4})$/', '$1 $2-$3', $telephoneNumber);
+		}
+		// 8 dígitos (fixo): 2 DDD + 4 + 4
+		if (preg_match('/^(\d{2})(\d{4})(\d{4})$/', $telephoneNumber)) {
+			return preg_replace('/^(\d{2})(\d{4})(\d{4})$/', '$1 $2-$3', $telephoneNumber);
+		}
+		// Caso seja inválido
+		return _('Invalid nember');
+	}
 }

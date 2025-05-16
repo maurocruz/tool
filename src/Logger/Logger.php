@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace Plinct\Tool\Logger;
 
 use Monolog\Handler\StreamHandler;
@@ -27,19 +26,11 @@ class Logger {
 	}
 
 	/**
-	 * @param string $pathfile
-	 */
-	public function setPathfile(string $pathfile): void
-	{
-		$this->pathfile = $pathfile;
-	}
-
-	/**
 	 * @param string $message
 	 * @param array $context
 	 * @return void
 	 */
-	public function debug(string $message, array $context = [])
+	public function debug(string $message, array $context = []): void
 	{
 		$this->level = Level::Debug;
 		$this->write($message, $context);
@@ -50,7 +41,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function info(string $message, array $context = [])
+	public function info(string $message, array $context = []): void
 	{
 		$this->level = Level::Info;
 		$this->write($message, $context);
@@ -61,7 +52,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function notice(string $message, array $context = [])
+	public function notice(string $message, array $context = []): void
 	{
 		$this->level = Level::Notice;
 		$this->write($message, $context);
@@ -72,7 +63,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function warning(string $message, array $context = [])
+	public function warning(string $message, array $context = []): void
 	{
 		$this->level = Level::Warning;
 		$this->write($message, $context);
@@ -83,7 +74,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function error(string $message, array $context = [])
+	public function error(string $message, array $context = []): void
 	{
 		$this->level = Level::Error;
 		$this->write($message, $context);
@@ -94,7 +85,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function critical(string $message, array $context = [])
+	public function critical(string $message, array $context = []): void
 	{
 		$this->level = Level::Critical;
 		$this->write($message, $context);
@@ -105,7 +96,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function alert(string $message, array $context = [])
+	public function alert(string $message, array $context = []): void
 	{
 		$this->level = Level::Alert;
 		$this->write($message, $context);
@@ -116,7 +107,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	public function emergency(string $message, array $context = [])
+	public function emergency(string $message, array $context = []): void
 	{
 		$this->level = Level::Emergency;
 		$this->write($message, $context);
@@ -126,7 +117,7 @@ class Logger {
 	 * @param array $context
 	 * @return void
 	 */
-	private function write(string $message, array $context = [])
+	private function write(string $message, array $context = []): void
 	{
 		$monolog = new Monolog($this->channel);
 		$monolog->pushHandler(new StreamHandler($this->pathfile, $this->level));
