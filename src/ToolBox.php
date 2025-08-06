@@ -11,6 +11,32 @@ use Plinct\Tool\Curl\v1\Curl;
 
 class ToolBox
 {
+	/**
+	 * @param string $input
+	 * @return string
+	 */
+	public static function camelCaseToSentence(string $input): string {
+		// Insere espaço antes de letras maiúsculas, mas não separa siglas (duas ou mais maiúsculas seguidas)
+		$spaced = preg_replace('/(?<=[a-z])(?=[A-Z])/', ' ', $input);
+		// Tudo minúsculo, depois capitaliza a primeira letra
+		return ucfirst(strtolower($spaced));
+	}
+
+	/**
+	 * @param array $attributes
+	 * @return string
+	 */
+	public function convertAttributesToString(array $attributes): string
+	{
+		$string = '';
+		foreach ($attributes as $key => $value) {
+			$string .= $key . '="' . $value . '" ';
+		}
+		return $string;
+	}
+	/**
+	 * @return array
+	 */
 	public static function currencies(): array
 	{
 		$currencies = [];
@@ -51,7 +77,7 @@ class ToolBox
 	 */
 	public static function NumberFormatterCurrency(string $locale = 'pt_BR'): NumberFormatter
 	{
-		return 	new NumberFormatter('pt_BR', NumberFormatter::CURRENCY);
+		return new NumberFormatter($locale, NumberFormatter::CURRENCY);
 	}
 
 	/**

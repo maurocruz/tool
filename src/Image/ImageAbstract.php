@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -12,7 +11,7 @@ abstract class ImageAbstract
   /**
    * @var ?string | false
    */
-  protected ?string $src = '';
+  protected string|false|null $src = '';
   /**
    * @var ?string
    */
@@ -29,7 +28,9 @@ abstract class ImageAbstract
    * @var string
    */
   protected string $dirname = '';
-
+	/**
+	 * @var string
+	 */
 	protected string $basename = '';
   /**
    * @var ?string
@@ -46,15 +47,15 @@ abstract class ImageAbstract
   /**
    * @var int|string
    */
-  protected $type;
+  protected string|int $type;
   /**
    * @var float
    */
   protected float $ratio = 0;
   /**
-   * @var int|float
+   * @var float|int
    */
-  protected float $fileSize = 0;
+  protected float|int $fileSize = 0;
   /**
    * @var string
    */
@@ -102,12 +103,16 @@ abstract class ImageAbstract
 	/**
 	 * @var false|int
 	 */
-	private $exifOrientation = false;
+	private int|false $exifOrientation = false;
+	/**
+	 * @var string[]
+	 */
+	private array $errors = [];
 
 	/**
    *
    */
-  public function setExtension()
+  public function setExtension(): void
   {
     $pathInfo = pathinfo($this->source);
     $this->extension = $pathInfo['extension'] ?? null;
@@ -116,7 +121,7 @@ abstract class ImageAbstract
   /**
    *
    */
-  protected function setServerRequests()
+  protected function setServerRequests(): void
   {
     $this->docRoot = filter_input(INPUT_SERVER, 'DOCUMENT_ROOT');
     $this->requestUri = filter_input(INPUT_SERVER, 'REQUEST_URI');
@@ -134,7 +139,7 @@ abstract class ImageAbstract
   /**
    *
    */
-  protected function setParseUrl()
+  protected function setParseUrl(): void
   {
     $parseUrl = parse_url($this->source);
     $this->sourceScheme = $parseUrl['scheme'] ?? null;
@@ -145,7 +150,7 @@ abstract class ImageAbstract
   /**
    * @throws Exception
    */
-  protected function setSizes()
+  protected function setSizes(): void
   {
     if (!$this->validate) $this->setValidate();
     if ($this->validate === false) {
@@ -187,7 +192,7 @@ abstract class ImageAbstract
   /**
    * @throws Exception
    */
-  protected function setSizesForRemote()
+  protected function setSizesForRemote(): void
   {
     if ($this->remote) {
       $data = (new Curl($this->source))->getImageData();
@@ -209,7 +214,7 @@ abstract class ImageAbstract
   /**
    * @throws Exception
    */
-  protected function setValidate()
+  protected function setValidate(): void
   {
 		if($this->source) {
 			if (!$this->remote) $this->setRemote();
@@ -230,7 +235,7 @@ abstract class ImageAbstract
   /**
    *
    */
-  protected function setPathInfo()
+  protected function setPathInfo(): void
   {
     if (!$this->remote) $this->setRemote();
     if (!$this->path) $this->setParseUrl();
@@ -240,7 +245,7 @@ abstract class ImageAbstract
       $this->pathFile = $this->path;
     } elseif (is_string($this->path)) {
       if (!$this->docRoot) $this->setServerRequests();
-      $this->pathFile = substr($this->path, 0, 1) != "/" ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
+      $this->pathFile = !str_starts_with($this->path, "/") ? $this->docRoot . $this->requestUri . $this->path : $this->docRoot . $this->path;
     }
     if (is_string($this->path)) {
       $pathInfo = pathinfo($this->path);
@@ -252,7 +257,7 @@ abstract class ImageAbstract
   /**
    *
    */
-  protected function setRemote()
+  protected function setRemote(): void
   {
     if (!$this->sourceHost) $this->setParseUrl();
     $this->remote = $this->sourceHost && $this->sourceHost !== $this->serverHost;
@@ -261,7 +266,7 @@ abstract class ImageAbstract
   /**
    * @throws Exception
    */
-  protected function setSrc()
+  protected function setSrc(): void
   {
     if ($this->remote == null) $this->setRemote();
     if ($this->validate == null) $this->setValidate();
@@ -289,7 +294,7 @@ abstract class ImageAbstract
    * @param int|null $width
    * @param int|null $height
    */
-  protected function setTrueColorImage(int $width = null, int $height = null)
+  protected function setTrueColorImage(int $width = null, int $height = null): void
   {
     $this->imageTrueColor = imagecreatetruecolor($width ?? $this->newWidth, $height ?? $this->newHeight);
   }
@@ -297,7 +302,7 @@ abstract class ImageAbstract
   /**
    *
    */
-  protected function setTemporaryImage()
+  protected function setTemporaryImage(): void
   {
     if (!is_resource($this->imageTrueColor)) {
 			$this->setTrueColorImage();
@@ -328,27 +333,42 @@ abstract class ImageAbstract
     }
   }
 
-  /**
-   * @param string $destinationFile
-   */
-  protected function saveToFile(string $destinationFile)
+	/**
+	 * @param string $destinationFile
+	 * @throws Exception
+	 */
+  protected function saveToFile(string $destinationFile): void
   {
     FileSystem::makeDirectory(dirname($destinationFile), 0777, true);
     $docroot = filter_input(INPUT_SERVER,'DOCUMENT_ROOT');
-    $pathfile = strpos($destinationFile, $docroot) !== false ? $destinationFile : $docroot . $destinationFile;
-    switch ($this->type) {
-      case '1':
-        imagegif($this->imageTrueColor, $pathfile);
-        break;
-      case '2':
-				imagejpeg($this->imageTrueColor, $pathfile);
-        break;
-      case '3':
-        imagepng($this->imageTrueColor, $pathfile);
-        break;
-	    case '18':
-				imagewebp($this->imageTrueColor, $pathfile);
-    }
+    $pathfile = str_contains($destinationFile, $docroot) ? $destinationFile : $docroot . $destinationFile;
+		$returns = match ($this->type) {
+			1 => imagegif($this->imageTrueColor, $pathfile),
+			2 => imagejpeg($this->imageTrueColor, $pathfile),
+			3 => imagepng($this->imageTrueColor, $pathfile),
+			18 => imagewebp($this->imageTrueColor, $pathfile),
+		};
+		if ($returns === false) {
+			$this->setError("Erro ao salvar imagem: " . $pathfile);
+			throw new Exception("Erro ao salvar imagem: " . $pathfile);
+		}
     imagedestroy($this->imageTrueColor);
   }
+
+	/**
+	 * @return string[]
+	 */
+	public function getError(): array
+	{
+		return $this->errors;
+	}
+
+	/**
+	 * @param string $message
+	 * @return void
+	 */
+	protected function setError(string $message): void
+	{
+		$this->errors[] = $message;
+	}
 }

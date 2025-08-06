@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace Plinct\Tool\Image;
 
 use Exception;
@@ -13,11 +12,11 @@ class Image extends Thumbnail implements ImageTransformInterface
   public function __construct(string $source = null)
   {
     $this->setServerRequests();
-		$source = substr($source,0,2) === '//' ? $this->protocol . $source : $source;
+		$source = str_starts_with($source, '//') ? $this->protocol . $source : $source;
     // DIRECTORY IMAGE
     $posLastSeparator = strrpos($this->requestUri, "/");
     $requestUri = substr($this->requestUri, 0, ($posLastSeparator + 1));
-    $this->source = $source ? ((substr($source,0,1) != "/" && substr($source,0,4) != "http" ? $requestUri . $source : $source) ?? $this->src) : null;
+    $this->source = $source ? ((!str_starts_with($source, "/") && !str_starts_with($source, "http") ? $requestUri . $source : $source) ?? $this->src) : null;
     // extension
     if($this->source) $this->setExtension();
   }
@@ -61,7 +60,12 @@ class Image extends Thumbnail implements ImageTransformInterface
     return $this;
   }
 
-  public function saveToFile(string $destinationFile) {
+	/**
+	 * @param string $destinationFile
+	 * @return void
+	 */
+  public function saveToFile(string $destinationFile): void
+  {
     parent::saveToFile($destinationFile);
   }
 
