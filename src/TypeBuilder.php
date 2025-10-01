@@ -66,7 +66,7 @@ class TypeBuilder
 	 */
 	public function getValue(string $property): mixed
 	{
-		return $this->isType ? $this->data[$property] : null;
+		return $this->isType ? $this->data[$property] ?? null : null;
 	}
 
 	/**
