@@ -10,7 +10,7 @@ class TypeBuilder
 	/**
 	 * @var ?string
 	 */
-	private ?string $idname;
+	private ?string $idname = null;
 	/**
 	 * @var mixed
 	 */
