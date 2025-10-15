@@ -43,8 +43,10 @@ class Sitemap
    * @var DOMElement|false
    */
   private DOMElement|false $url;
-
-	private string $namespace;
+	/**
+	 * @var string|null
+	 */
+	private ?string $namespace = null;
 
 	/**
 	 * @param $filename
